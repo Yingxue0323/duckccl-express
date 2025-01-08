@@ -1,4 +1,5 @@
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 
 // 定义日志级别
@@ -41,16 +42,24 @@ const transports = [
   // 控制台输出
   new winston.transports.Console(),
   
-  // 错误日志文件
-  new winston.transports.File({
-    filename: path.join('logs', 'error.log'),
+  // 错误日志文件 - 使用轮转
+  new DailyRotateFile({
+    filename: path.join('logs', 'error-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
     level: 'error',
+    maxSize: '20m',     // 单个文件最大 20MB
+    maxFiles: '14d',    // 保留 14 天的日志
+    zippedArchive: true // 压缩旧日志
   }),
   
-  // 所有日志文件
-  new winston.transports.File({
-    filename: path.join('logs', 'all.log'),
-  }),
+  // 所有日志文件 - 使用轮转
+  new DailyRotateFile({
+    filename: path.join('logs', 'all-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '14d',
+    zippedArchive: true
+  })
 ];
 
 // 创建日志实例
