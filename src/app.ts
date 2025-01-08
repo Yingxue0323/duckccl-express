@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
-import { connectDB } from './config/db';
+import { connectDB } from '../config/db';
 import dotenv from 'dotenv';
-import logger from './config/logger';
+import logger from '../config/logger';
 import { loggerMiddleware } from './middleware/loggerMiddleware';
 
 dotenv.config();
