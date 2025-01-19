@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import logger from './logger';
+
 export const connectDB = async () => {
   if (!process.env.MONGODB_URI) {
     logger.error('错误: 未设置 MONGODB_URI 环境变量');
