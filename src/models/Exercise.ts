@@ -7,9 +7,7 @@ export interface IExercise extends Document {
   dialogCount: number;
   category: string;
   source: string;
-  isLearned: boolean;
   isVIPOnly: boolean;
-  viewCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,14 +45,6 @@ const ExerciseSchema = new Schema({
   isVIPOnly: { 
     type: Boolean, 
     default: false 
-  },
-  isLearned: { 
-    type: Boolean, 
-    default: false 
-  },
-  viewCount: { 
-    type: Number, 
-    default: 0 
   }
 }, {
   timestamps: true 
