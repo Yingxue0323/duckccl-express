@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { generateUniqueUserCode } from '../utils/userCodeGenerator';
+import { LANGUAGES, LanguageCode } from '../config/constants';
 
 interface IFavoriteCount {
   word: number;
@@ -13,6 +14,7 @@ export interface IUser extends Document {
   nickname: string;
   avatarUrl: string; 
   favoriteCount: IFavoriteCount;
+  preferredLanguage: LanguageCode;
   
   // VIP Status
   isVIP: boolean;
@@ -63,6 +65,13 @@ const UserSchema = new Schema({
     },
     _id: false
   },
+  preferredLanguage: {
+    type: String,
+    enum: Object.values(LANGUAGES),
+    required: true
+  },
+
+  // VIP Status
   isVIP: {
     type: Boolean,
     default: false

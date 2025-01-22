@@ -4,6 +4,7 @@ export interface IExerciseFavorite extends Document {
   userId: mongoose.Types.ObjectId;
   itemId: mongoose.Types.ObjectId;
   itemType: 'Exercise' | 'Audio';
+  
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,35 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { LANGUAGES, LanguageCode } from '../config/constants';
+import { LanguageCode } from '../config/constants';
 
-export interface IAudio extends Document {
-  parentId: mongoose.Types.ObjectId;  
-  parentModel: string;                  // 'DIALOG'|'INTRO'
-  language: LanguageCode;               
-  url: string;                          
-  duration: number;                       
-  translations: {
-    language: LanguageCode;
-    text: string;
-  }[];
-  createdAt: Date;
-  updatedAt: Date;
+interface AudioContent {
+  url: string;
+  duration: number;
+  text: string;
 }
 
-const AudioSchema = new Schema({
-  parentId: {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
-  parentModel: {
-    type: String,
-    enum: ['DIALOG', 'INTRO'],
-    required: true
-  },
-  language: {
-    type: String,
-    enum: Object.values(LANGUAGES),
-    required: true
-  },
+const AudioContentSchema = new Schema({
   url: {
     type: String,
     required: true
@@ -39,23 +17,49 @@ const AudioSchema = new Schema({
     required: true,
     min: 0
   },
-  translations: [{
-    language: {
-      type: String,
-      enum: Object.values(LANGUAGES),
-      required: true
-    },
-    text: {
-      type: String,
-      required: true
-    },
-    _id: false
-  }]
+  text: {
+    type: String,
+    required: true
+  }
+}, { _id: false });
+
+
+export interface IAudio extends Document {
+  dialogId: mongoose.Types.ObjectId;
+  sequence: 1 | 2;
+  englishContent: AudioContent;
+  contents: {
+    [key in LanguageCode]?: AudioContent;  //考虑英语使用者
+  };
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const AudioSchema = new Schema({
+  dialogId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Dialog',
+    required: true
+  },
+  sequence: {
+    type: Number,
+    required: true,
+    enum: [1, 2]
+  },
+  englishContent: {
+    type: AudioContentSchema,
+    required: true
+  },
+  contents: {
+    type: Map,
+    of: AudioContentSchema
+  }
 }, {
   timestamps: true
 });
 
-// 确保每个parent的每种语言并发情况下的原子性
-AudioSchema.index({ parentId: 1, language: 1 }, { unique: true });
+// 确保每个dialog的每个sequence只有一个音频记录
+AudioSchema.index({ dialogId: 1, sequence: 1 }, { unique: true });
 
 export default mongoose.model<IAudio>('Audio', AudioSchema); 

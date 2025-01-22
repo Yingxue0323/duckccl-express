@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IWordFavorite extends Document {
   userId: mongoose.Types.ObjectId;
   wordId: mongoose.Types.ObjectId;
+  
   createdAt: Date;
   updatedAt: Date;
 }

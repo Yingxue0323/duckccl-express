@@ -4,6 +4,7 @@ export interface IDialog extends Document {
   exerciseId: mongoose.Types.ObjectId; 
   sequence: number;
   audios: mongoose.Types.ObjectId[];
+  
   createdAt: Date;
   updatedAt: Date;
 }

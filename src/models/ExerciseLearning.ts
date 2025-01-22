@@ -4,7 +4,7 @@ export interface IExerciseLearning extends Document {
   userId: mongoose.Types.ObjectId;
   exerciseId: mongoose.Types.ObjectId;
   isLearned: boolean;
-  lastLearnedAt: Date;
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,10 +23,6 @@ const ExerciseLearningSchema = new Schema({
   isLearned: {
     type: Boolean,
     default: false
-  },
-  lastLearnedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true
