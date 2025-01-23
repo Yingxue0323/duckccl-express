@@ -19,13 +19,7 @@ export interface IUser extends Document {
   // VIP Status
   isVIP: boolean;
   vipExpireDate?: Date;
-  vipHistory: {
-    source: 'PURCHASE' | 'INVITATION';
-    duration: number;     // 天数
-    startDate: Date;
-    endDate: Date;
-    inviterId?: mongoose.Types.ObjectId;
-  }[];
+  redeem?: mongoose.Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;
@@ -44,15 +38,16 @@ const UserSchema = new Schema({
   },
   userCode: {
     type: String,
-    unique: true
+    unique: true,
+    index: true,
+    required: true
   },
   nickname: { 
     type: String, 
     required: true 
   },
   avatarUrl: { 
-    type: String,
-    required: true 
+    type: String
   },
   favoriteCount: {
     word: {
@@ -80,30 +75,11 @@ const UserSchema = new Schema({
     type: Date,
     default: null
   },
-  vipHistory: [{
-    source: {
-      type: String,
-      enum: ['PURCHASE', 'INVITATION'],
-      required: true
-    },
-    duration: {
-      type: Number,
-      required: true
-    },
-    startDate: {
-      type: Date,
-      required: true
-    },
-    endDate: {
-      type: Date,
-      required: true
-    },
-    inviterId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    _id: false
-  }]
+  redeem: {
+    type: Schema.Types.ObjectId,
+    ref: 'Redeem',
+    default: null
+  }
 }, {
   timestamps: true
 });

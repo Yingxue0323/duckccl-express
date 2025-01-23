@@ -4,7 +4,7 @@ export interface IExerciseLearning extends Document {
   userId: mongoose.Types.ObjectId;
   exerciseId: mongoose.Types.ObjectId;
   isLearned: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,5 +30,6 @@ const ExerciseLearningSchema = new Schema({
 
 // 复合索引：每个用户的每个练习只能有一条学习记录
 ExerciseLearningSchema.index({ userId: 1, exerciseId: 1 }, { unique: true });
+ExerciseLearningSchema.index({ userId: 1, isLearned: 1 });
 
 export default mongoose.model<IExerciseLearning>('ExerciseLearning', ExerciseLearningSchema); 

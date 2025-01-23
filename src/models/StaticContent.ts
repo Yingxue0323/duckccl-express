@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { LANGUAGES, LanguageCode, 
-          CATEGORIES, Category } from '../config/constants';
+        CONTENT_TYPE, ContentType } from '../config/constants';
 
 interface Translation {
   language: LanguageCode;
-  text: string;
-  audioUrl: string;
+  title: string;
+  content: string;
 }
 
 const TranslationSchema = new Schema({
@@ -14,49 +14,47 @@ const TranslationSchema = new Schema({
     enum: Object.values(LANGUAGES),
     required: true
   },
-  text: {
+  title: {
     type: String,
     required: true
   },
-  audioUrl: {
+  content: {
     type: String,
     required: true
   }
 }, { _id: false });
 
-export interface IWord extends Document {
-  word: string;
-  audioUrl: string;
+/*
+CONTENT_TYPE: 
+  - TERMS: 用户协议
+  - PRIVACY: 隐私政策
+  - VIP_GUIDE: 成为会员
+  - ADVANCED_INFO: 高级情报
+  - ABOUT: 关于我们
+*/
+export interface IStaticContent extends Document {
+  contentType: ContentType;
   translations: {
     [key in LanguageCode]?: Translation
   };
-  category: Category;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-const WordSchema = new Schema({
-  word: {
+const StaticContentSchema = new Schema({
+  contentType: {
     type: String,
-    required: true
-  },
-  audioUrl: {
-    type: String,
-    required: true
+    enum: Object.values(CONTENT_TYPE),
+    required: true,
+    unique: true
   },
   translations: {
     type: Map,
     of: TranslationSchema
-  },
-  category: {
-    type: String,
-    enum: Object.values(CATEGORIES),
-    required: true,
-    index: true
   }
 }, {
   timestamps: true
-});
+}); 
 
-export default mongoose.model<IWord>('Word', WordSchema); 
+export default mongoose.model<IStaticContent>('StaticContent', StaticContentSchema); 

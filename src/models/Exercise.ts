@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { EXERCISE_CATEGORIES, ExerciseSource,
-         EXERCISE_SOURCES, ExerciseCategory } from '../config/constants';
+import { CATEGORIES, Category,
+         EXERCISE_SOURCES, ExerciseSource } from '../config/constants';
 
 export interface IExercise extends Document {
   title: string;
   intro: string;
   dialogs: mongoose.Types.ObjectId[];
-  category: ExerciseCategory;
+  category: Category;
   source: ExerciseSource;
   isVIPOnly: boolean;
   
@@ -30,7 +30,7 @@ const ExerciseSchema = new Schema({
   }],
   category: { 
     type: String, 
-    enum: Object.values(EXERCISE_CATEGORIES),
+    enum: Object.values(CATEGORIES),
     required: true 
   },
   source: {

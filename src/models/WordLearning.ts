@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { WORD_STATUS, WordStatus } from '../config/constants';
 
 export interface IWordLearning extends Document {
   userId: mongoose.Types.ObjectId;
   wordId: mongoose.Types.ObjectId;
   correctCount: number;
-  status: 'UNLEARNED' | 'LEARNING' | 'LEARNED';
-  
+  status: WordStatus;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,12 +24,15 @@ const WordLearningSchema = new Schema({
   },
   correctCount: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0,
+    max: 21
   },
   status: {
     type: String,
-    enum: ['UNLEARNED', 'LEARNING', 'LEARNED'],
-    default: 'UNLEARNED'
+    enum: Object.values(WORD_STATUS),
+    default: WORD_STATUS.UNLEARNED,
+    required: true
   }
 }, {
   timestamps: true
@@ -36,5 +40,6 @@ const WordLearningSchema = new Schema({
 
 // 复合索引：每个用户的每个单词只能有一条学习记录
 WordLearningSchema.index({ userId: 1, wordId: 1 }, { unique: true });
+WordLearningSchema.index({ userId: 1, status: 1 });
 
 export default mongoose.model<IWordLearning>('WordLearning', WordLearningSchema); 
