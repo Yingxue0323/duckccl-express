@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUserPractice extends Document {
+  _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   audioId: mongoose.Types.ObjectId;
   recordingUrl: string;           // 用户录制的音频
   duration: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }

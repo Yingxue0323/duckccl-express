@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IIntro extends Document {
+  _id: mongoose.Types.ObjectId;
   exerciseId: mongoose.Types.ObjectId;
   text: string;
 

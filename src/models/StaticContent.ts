@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { LANGUAGES, LanguageCode, 
-        CONTENT_TYPE, ContentType } from '../config/constants';
+        CONTENT_TYPE, ContentType } from '../configs/constants';
 
 interface Translation {
   language: LanguageCode;
@@ -33,6 +33,7 @@ CONTENT_TYPE:
   - ABOUT: 关于我们
 */
 export interface IStaticContent extends Document {
+  _id: mongoose.Types.ObjectId;
   contentType: ContentType;
   translations: {
     [key in LanguageCode]?: Translation

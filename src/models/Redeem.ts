@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IRedeem extends Document {
+  _id: mongoose.Types.ObjectId;
   inviterId: mongoose.Types.ObjectId; // 邀请者
   code: string;               // 兑换码
   duration: number;           // VIP时长（天数）

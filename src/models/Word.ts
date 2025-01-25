@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { LANGUAGES, LanguageCode, 
-          CATEGORIES, Category } from '../config/constants';
+          CATEGORIES, Category } from '../configs/constants';
 
 interface Translation {
   language: LanguageCode;
@@ -25,6 +25,7 @@ const TranslationSchema = new Schema({
 }, { _id: false });
 
 export interface IWord extends Document {
+  _id: mongoose.Types.ObjectId;
   word: string;
   audioUrl: string;
   translations: {

@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { WORD_STATUS, WordStatus } from '../config/constants';
+import { WORD_STATUS, WordStatus } from '../configs/constants';
 
 export interface IWordLearning extends Document {
+  _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   wordId: mongoose.Types.ObjectId;
   correctCount: number;

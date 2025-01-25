@@ -1,10 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExerciseFavorite extends Document {
+  _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   itemId: mongoose.Types.ObjectId;
   itemType: 'Exercise' | 'Audio';
-  
+
   createdAt: Date;
   updatedAt: Date;
 }

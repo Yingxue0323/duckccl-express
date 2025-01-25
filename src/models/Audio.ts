@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { LanguageCode } from '../config/constants';
+import { LanguageCode } from '../configs/constants';
 
 interface AudioContent {
   url: string;
@@ -25,6 +25,7 @@ const AudioContentSchema = new Schema({
 
 
 export interface IAudio extends Document {
+  _id: mongoose.Types.ObjectId;
   dialogId: mongoose.Types.ObjectId;
   sequence: 1 | 2;
   englishContent: AudioContent;

@@ -1,0 +1,68 @@
+name: Koala CCL Node.js CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build and Deploy
+      env:
+        NODE_ENV: development
+        PORT: 3000
+        WX_APPID: ${{ secrets.WX_APPID }}
+        WX_SECRET: ${{ secrets.WX_SECRET }}
+        WX_PUBLIC_KEY: ${{ secrets.WX_PUBLIC_KEY }}
+        WX_PRIVATE_KEY: ${{ secrets.WX_PRIVATE_KEY }}
+        WX_CERTIFICATE: ${{ secrets.WX_CERTIFICATE }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        
+      run: |
+        # 构建
+        mkdir -p dist
+        cp -r src/* dist/          # 复制源代码
+        cp -r public dist/         # 复制公共资源
+        cp package*.json dist/     # 复制 package.json 文件
+        cp tsconfig.json dist/     # 复制 TypeScript 配置
+        cp ecosystem.config.ts dist/ # 复制 PM2 配置
+
+        # 部署
+        sudo mkdir -p /var/www/koala-ccl
+        sudo chown -R ubuntu:ubuntu /var/www/koala-ccl
+        
+        cp -r dist/* /var/www/koala-ccl/
+        echo "部署完成，开始创建环境变量文件..."
+
+        # 创建环境变量文件
+        echo "NODE_ENV=$NODE_ENV" > /var/www/koala-ccl/.env
+        echo "PORT=$PORT" >> /var/www/koala-ccl/.env
+        echo "MONGODB_URI=$MONGODB_URI" >> /var/www/koala-ccl/.env
+        echo "WX_APPID=$WX_APPID" >> /var/www/koala-ccl/.env
+        echo "WX_SECRET=$WX_SECRET" >> /var/www/koala-ccl/.env
+        echo "WX_PUBLIC_KEY=$WX_PUBLIC_KEY" >> /var/www/koala-ccl/.env
+        echo "WX_PRIVATE_KEY=$WX_PRIVATE_KEY" >> /var/www/koala-ccl/.env
+        echo "WX_CERTIFICATE=$WX_CERTIFICATE" >> /var/www/koala-ccl/.env
+        echo ".env文件创建完成，开始设置权限..."
+        
+        # 设置权限
+        chmod 600 /var/www/koala-ccl/.env
+        chmod -R 755 /var/www/koala-ccl
+        echo "权限设置完成，开始重启应用..."
+
+        # 使用 PM2 重启应用
+        pm2 reload ccl-koala || pm2 start app.ts --name ccl-koala
+        echo "应用重启完成✅"

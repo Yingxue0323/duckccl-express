@@ -1,10 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IDialog extends Document {
+  _id: mongoose.Types.ObjectId;
   exerciseId: mongoose.Types.ObjectId; 
   sequence: number;
   audios: mongoose.Types.ObjectId[];
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
