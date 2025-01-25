@@ -1,8 +1,8 @@
 import express, { Express } from 'express';
-import { connectDB } from './config/db';
+import { connectDB } from './configs/db';
 import dotenv from 'dotenv';
-import logger from './config/logger';
-import { loggerMiddleware } from './middleware/loggerMiddleware';
+import logger from './configs/logger';
+import { registerRoutes } from './routes';
 
 dotenv.config();
 
@@ -11,10 +11,12 @@ const port = process.env.PORT || 3000;
 
 // 中间件
 app.use(express.json());
-app.use(loggerMiddleware);
 
 // 数据库连接
 connectDB();
+
+// 注册路由
+registerRoutes(app);
 
 // 日志
 app.get('/', (req, res) => {
@@ -30,3 +32,5 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 app.listen(port, () => {
   logger.info(`服务器运行在端口 ${port}`);
 });
+
+export default app;

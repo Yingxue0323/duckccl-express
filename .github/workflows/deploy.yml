@@ -64,5 +64,5 @@ jobs:
         echo "权限设置完成，开始重启应用..."
 
         # 使用 PM2 重启应用
-        pm2 reload ccl-koala || pm2 start app.ts --name ccl-koala
+        pm2 reload koala || pm2 start app.ts --name wkoala
         echo "应用重启完成✅"
