@@ -2,6 +2,7 @@
 .env
 .env.local
 .DS_Store
+.keys/
 
 # Node modules
 node_modules
@@ -9,4 +10,3 @@ node_modules
 # Build files
 dist/
 logs/
-package-lock.json

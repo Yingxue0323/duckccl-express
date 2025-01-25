@@ -1,7 +1,8 @@
 // 支持语言种类
 export const LANGUAGES = {
   ENGLISH: 'EN',
-  CHINESE: 'CH',
+  CHINESE_SIMPLIFIED: 'zh_CN',
+  CHINESE_TRADITIONAL: 'zh_TW',
   JAPANESE: 'JP',
   KOREAN: 'KR',
   FRENCH: 'FR',
@@ -68,3 +69,12 @@ export const CONTENT_TYPE = {
 } as const;
 
 export type ContentType = typeof CONTENT_TYPE[keyof typeof CONTENT_TYPE];
+
+
+// 登录类型: 小程序/APP
+export const LOGIN_TYPE = {
+  WECHAT: 'WECHAT',
+  APP: 'APP'
+} as const;
+
+export type LoginType = typeof LOGIN_TYPE[keyof typeof LOGIN_TYPE];

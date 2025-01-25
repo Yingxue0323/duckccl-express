@@ -18,11 +18,12 @@ export interface IUser extends Document {
   
   // VIP Status
   isVIP: boolean;
-  vipExpireDate?: Date;
+  vipExpireAt?: Date;
   redeem?: mongoose.Types.ObjectId;
 
   // 登陆相关
   sessionKey?: string;        // 小程序登录凭证Only
+  sessionExpireAt?: Date;    // 小程序登录凭证过期时间
   openId: string;           // 在小程序中的唯一标识
   unionId?: string;           // 在微信开放平台中的唯一标识
   email?: string;
@@ -68,7 +69,7 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false
   },
-  vipExpireDate: {
+  vipExpireAt: {
     type: Date,
     default: null
   },
@@ -96,6 +97,10 @@ const UserSchema = new Schema({
   },
   sessionKey: {
     type: String
+  },
+  sessionExpireAt: {
+    type: Date,
+    default: null
   },
   loginType: {
     type: String,
