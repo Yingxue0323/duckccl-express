@@ -9,6 +9,10 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true
     },
-    "include": ["src/**/*", "src/configs/constants.ts"],
-    "exclude": ["node_modules", "dist"]
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
   }

@@ -32,20 +32,27 @@ jobs:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         
       run: |
-        # 构建
-        mkdir -p dist
-        cp -r src/* dist/          # 复制源代码
-        cp -r public dist/         # 复制公共资源
-        cp package*.json dist/     # 复制 package.json 文件
-        cp tsconfig.json dist/     # 复制 TypeScript 配置
-        cp ecosystem.config.ts dist/ # 复制 PM2 配置
-
-        # 部署
+        # 清理并准备部署目录
+        sudo rm -rf /var/www/koala-ccl/*  # 清理旧文件
         sudo mkdir -p /var/www/koala-ccl
-        sudo chown -R ubuntu:ubuntu /var/www/koala-ccl
-        
-        cp -r dist/* /var/www/koala-ccl/
-        echo "部署完成，开始创建环境变量文件..."
+        echo "清理完成，开始编译..."
+
+        # 编译ts
+        npm run build
+        echo "编译完成，开始构建..."
+
+        # 构建
+        cp -r dist /var/www/koala-ccl/     # 编译后的文件
+        cp -r public /var/www/koala-ccl/   # 静态文件
+        cp package*.json /var/www/koala-ccl/
+        cp ecosystem.config.js /var/www/koala-ccl/
+        cp tsconfig.json /var/www/koala-ccl/
+        echo "构建完成，开始安装依赖..."
+
+        # 安装生产依赖
+        cd /var/www/koala-ccl
+        npm install
+        echo "完成，开始创建环境变量文件..."
 
         # 创建环境变量文件
         echo "NODE_ENV=$NODE_ENV" > /var/www/koala-ccl/.env
@@ -63,6 +70,12 @@ jobs:
         chmod -R 755 /var/www/koala-ccl
         echo "权限设置完成，开始重启应用..."
 
-        # 使用 PM2 重启应用
-        pm2 reload koala || pm2 start app.ts --name wkoala
+        # PM2 启动/重启
+        echo "配置并启动 PM2..."
+        if pm2 list | grep -q "koala"; then
+          pm2 reload koala --update-env
+        else
+          pm2 start dist/app.js --name koala
+        fi
+        pm2 save
         echo "应用重启完成✅"
