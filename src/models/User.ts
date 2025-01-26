@@ -41,11 +41,11 @@ const UserSchema = new Schema({
     index: true
   },
   nickname: { 
-    type: String, 
-    required: true 
+    type: String
   },
   avatarUrl: { 
-    type: String
+    type: String,
+    default: '/public/default_avatar.png'
   },
   favoriteCount: {
     word: {
@@ -119,6 +119,7 @@ const UserSchema = new Schema({
 UserSchema.pre('save', async function(next) {
   if (this.isNew) {
     this.userCode = await generateUniqueUserCode();
+    this.nickname = `Koala${this.userCode.slice(-4)}`;
   }
   next();
 });

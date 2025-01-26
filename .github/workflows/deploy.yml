@@ -30,39 +30,31 @@ jobs:
         WX_PRIVATE_KEY: ${{ secrets.WX_PRIVATE_KEY }}
         WX_CERTIFICATE: ${{ secrets.WX_CERTIFICATE }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
       run: |
-        # 清理并准备部署目录
-        sudo rm -rf /var/www/koala-ccl/*  # 清理旧文件
+        # 首次创建目录
         sudo mkdir -p /var/www/koala-ccl
-        echo "清理完成，开始编译..."
 
         # 编译ts
         npm run build
         echo "编译完成，开始构建..."
 
-        # 构建
-        cp -r dist /var/www/koala-ccl/     # 编译后的文件
-        cp -r public /var/www/koala-ccl/   # 静态文件
-        cp package*.json /var/www/koala-ccl/
-        cp ecosystem.config.js /var/www/koala-ccl/
-        cp tsconfig.json /var/www/koala-ccl/
-        echo "构建完成，开始安装依赖..."
+         # 只同步变化的文件
+        sudo rsync -av --delete dist/ /var/www/koala-ccl/dist/
+        sudo rsync -av public/ /var/www/koala-ccl/public/
+        sudo rsync -av package*.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
+        echo "同步完成，开始检查依赖更新..."
 
-        # 安装生产依赖
-        cd /var/www/koala-ccl
-        npm install
-        echo "完成，开始创建环境变量文件..."
+        # 只在 package.json 变化时更新依赖
+        if ! cmp -s package.json /var/www/koala-ccl/package.json; then
+          cd /var/www/koala-ccl
+          npm install
+        fi
+        echo "依赖更新完成，开始创建.env文件..."
 
         # 创建环境变量文件
-        echo "NODE_ENV=$NODE_ENV" > /var/www/koala-ccl/.env
-        echo "PORT=$PORT" >> /var/www/koala-ccl/.env
-        echo "MONGODB_URI=$MONGODB_URI" >> /var/www/koala-ccl/.env
-        echo "WX_APPID=$WX_APPID" >> /var/www/koala-ccl/.env
-        echo "WX_SECRET=$WX_SECRET" >> /var/www/koala-ccl/.env
-        echo "WX_PUBLIC_KEY=$WX_PUBLIC_KEY" >> /var/www/koala-ccl/.env
-        echo "WX_PRIVATE_KEY=$WX_PRIVATE_KEY" >> /var/www/koala-ccl/.env
-        echo "WX_CERTIFICATE=$WX_CERTIFICATE" >> /var/www/koala-ccl/.env
+        env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_)' > /var/www/koala-ccl/.env
         echo ".env文件创建完成，开始设置权限..."
         
         # 设置权限

@@ -1,8 +1,10 @@
-import express, { Express } from 'express';
+import express from 'express';
+import { Express, Request, Response} from 'express';
 import { connectDB } from './configs/db';
 import dotenv from 'dotenv';
 import logger from './configs/logger';
 import { registerRoutes } from './routes';
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 
@@ -23,11 +25,9 @@ app.get('/', (req, res) => {
     logger.info('访问了首页路由');
     res.send('Hello World!');
 });
-// 错误处理示例
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    logger.error(`错误: ${err.message}`);
-    res.status(500).send('服务器错误');
-});
+
+// 错误处理中间件
+app.use(errorHandler);
 
 app.listen(port, () => {
   logger.info(`服务器运行在端口 ${port}`);

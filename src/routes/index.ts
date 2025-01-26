@@ -1,17 +1,17 @@
 import { Express } from 'express';
 // import wordRoute from './wordRoute';
 // import exerciseRoute from './exerciseRoute';
-// import userRoute from './userRoute';
-// import authRoute from './authRoute';
+import userRoute from './userRoute';
+import authRoute from './authRoute';
 // import staticRoute from './staticRoute';
 
 
 export function registerRoutes(app: Express) {
   // 认证相关路由
-//   app.use('/api/v1/auth', authRoute);
+  app.use('/api/v1/auth', authRoute);
   
   // 用户相关路由
-//   app.use('/api/v1/users', userRoute);
+  app.use('/api/v1/users', userRoute);
   
   // 单词相关路由
 //   app.use('/api/v1/words', wordRoute);
