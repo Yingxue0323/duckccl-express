@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { CATEGORIES, Category,
-         EXERCISE_SOURCES, ExerciseSource } from '../configs/constants';
+         EXERCISE_SOURCES, ExerciseSource } from '../utils/constants';
 
 export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;

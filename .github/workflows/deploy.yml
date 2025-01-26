@@ -32,6 +32,7 @@ jobs:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+        ADMIN_IP: ${{ secrets.ADMIN_IP }}
       run: |
         # 首次创建目录
         sudo mkdir -p /var/www/koala-ccl

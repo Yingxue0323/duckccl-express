@@ -2,7 +2,7 @@ import express from 'express';
 import { Express, Request, Response} from 'express';
 import { connectDB } from './configs/db';
 import dotenv from 'dotenv';
-import logger from './configs/logger';
+import logger from './utils/logger';
 import { registerRoutes } from './routes';
 import { errorHandler } from './middlewares/errorHandler';
 

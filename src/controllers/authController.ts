@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/authService';
-import logger from '../configs/logger';
+import logger from '../utils/logger';
 
 class AuthController {
   // 微信登录

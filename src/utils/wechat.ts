@@ -1,5 +1,5 @@
 import axios from 'axios';
-import logger from '../configs/logger';
+import logger from './logger';
 
 interface WxSession {
   session_key: string;

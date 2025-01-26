@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { generateUniqueUserCode } from '../utils/userCodeGenerator';
 import { LANGUAGES, LanguageCode,
-         LOGIN_TYPE, LoginType } from '../configs/constants';
+         LOGIN_TYPE, LoginType } from '../utils/constants';
 
 interface IFavoriteCount {
   word: number;

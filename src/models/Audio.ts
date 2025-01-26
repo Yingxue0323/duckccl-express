@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { LanguageCode } from '../configs/constants';
+import { LanguageCode } from '../utils/constants';
 
 interface AudioContent {
   url: string;

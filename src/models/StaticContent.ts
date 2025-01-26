@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { LANGUAGES, LanguageCode, 
-        CONTENT_TYPE, ContentType } from '../configs/constants';
+        CONTENT_TYPE, ContentType } from '../utils/constants';
 
 interface Translation {
   language: LanguageCode;

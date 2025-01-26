@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { AuthError } from "../utils/errors";
-import logger from "../configs/logger";
+import logger from "../utils/logger";
 
 export const errorHandler: ErrorRequestHandler = (err, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof AuthError) {

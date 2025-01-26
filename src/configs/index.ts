@@ -26,5 +26,6 @@ export const config = {
   },
   mongodb: {
     uri: process.env.MONGODB_URI!
-  }
+  },
+  adminIp: process.env.ADMIN_IP!
 };
