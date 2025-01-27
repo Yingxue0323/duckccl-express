@@ -9,7 +9,7 @@ interface JwtPayload {
 
 export const generateToken = (userId: string): string => {
   return jwt.sign(
-    { userId } as JwtPayload,
+    { userId },
     config.jwt.secret,
     { expiresIn: config.jwt.expiresIn }
   );

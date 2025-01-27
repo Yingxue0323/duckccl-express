@@ -26,10 +26,10 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
     }
 
     // 4. 检查用户 session 是否过期
-    if (!user.sessionKey || !user.sessionExpireAt || user.sessionExpireAt < new Date()) {
-      logger.error(`${req.method} ${req.url} - 会话已过期`);
-      throw new AuthError('SESSION_EXPIRED', '会话已过期');
-    }
+    // if (!user.sessionKey || !user.sessionExpireAt || user.sessionExpireAt < new Date()) {
+    //   logger.error(`${req.method} ${req.url} - 会话已过期`);
+    //   throw new AuthError('SESSION_EXPIRED', '会话已过期');
+    // }
 
     // 将用户信息附加到请求对象
     req.user = user;
