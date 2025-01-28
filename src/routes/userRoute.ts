@@ -4,8 +4,6 @@ import { authMiddleware, ipMiddleware } from '../middlewares/authMW';
 
 const router = Router();
 
-// 创建用户
-router.post('/', authMiddleware, userController.createUser);
 
 // 获取所有用户，IP限制，目前只对ying开放
 router.get('/', ipMiddleware, userController.getAllUsers);

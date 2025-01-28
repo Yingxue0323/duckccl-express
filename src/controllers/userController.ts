@@ -3,32 +3,6 @@ import logger from '../utils/logger';
 import { userService } from '../services/userService';
 
 class UserController {
-  // 创建用户
-  async createUser(req: Request, res: Response): Promise<any> {
-    try {
-      const { code } = req.body;
-      if (!code) {
-        return res.status(400).json({
-          success: false,
-          message: '缺少 code 参数'
-        });
-      }
-
-      const { user, token } = await userService.createUser(code);
-
-      logger.info(`创建用户成功: ${user._id}`);
-      return res.json({
-        success: true,
-        token,
-        user
-      });
-
-    } catch (error: any) {
-      logger.error('创建用户失败:', error);
-      return res.status(500).json({ message: error.message });
-    }
-  }
-
   // 获取所有用户
   async getAllUsers(req: Request, res: Response): Promise<any> {
     try {
