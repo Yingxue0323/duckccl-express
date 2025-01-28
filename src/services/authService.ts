@@ -12,7 +12,7 @@ class AuthService {
     let user = await userService.getUserByOpenid(openid);
 
     if (!user) { // 3a. 创建新用户
-      const { user: newUser, token } = await userService.createUser(code);
+      const { user: newUser, token } = await userService.createUser(openid, session_key);
       return { user: newUser, token };
     }
 

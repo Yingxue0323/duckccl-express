@@ -1,14 +1,10 @@
 import User, { IUser } from '../models/User';
 import { LANGUAGES, LOGIN_TYPE } from '../utils/constants';
-import { code2Session } from '../utils/wechat';
 import { generateToken } from '../utils/jwt';
 
 class UserService {
   // 创建用户
-  async createUser(code: string): Promise<{ user: IUser, token: string }> {
-    const wxSession = await code2Session(code);
-    const { openid, session_key } = wxSession;
-    
+  async createUser(openid: string, session_key: string): Promise<{ user: IUser, token: string }> {
     const user = await User.create({
       openId: openid,
       sessionKey: session_key,
