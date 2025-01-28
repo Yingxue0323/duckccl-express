@@ -128,7 +128,5 @@ UserSchema.virtual('formattedUserCode').get(function() {
   return this.userCode ? this.userCode.padStart(7, '0') : '';
 });
 
-UserSchema.index({ userCode: 1 }, { unique: true });
-
 
 export default mongoose.model<IUser>('User', UserSchema); 
