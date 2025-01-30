@@ -23,14 +23,13 @@ export async function code2Session(code: string): Promise<WxSession> {
 
     const data = response.data;
     if (data.errcode) {
-        logger.error(`微信接口jscode2session返回错误: 
-            errcode=${data.errcode}, errmsg=${data.errmsg}`);
+        logger.error(`微信接口jscode2session返回错误: ${JSON.stringify(data)}`);
         throw data;
     }
 
     return data;
   } catch (error: any) {
-    logger.error('调用code2Session失败');
+    logger.error(`调用code2Session失败: ${JSON.stringify({ error: error.message })}`);
     throw new Error('微信服务调用失败');
   }
 } 

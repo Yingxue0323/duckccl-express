@@ -11,7 +11,7 @@ class UserController {
       logger.info(`获取所有用户成功: ${users.length}`);
       return res.json({ count: users.length, users});
     } catch (error: any) {
-      logger.error('获取用户失败:', error);
+      logger.error(`获取用户失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }
@@ -31,7 +31,7 @@ class UserController {
       return res.json({ success: true, user });
 
     } catch (error: any) {
-      logger.error('获取用户信息失败:', error);
+      logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }
@@ -51,7 +51,7 @@ class UserController {
       return res.json({ success: true, user });
       
     } catch (error: any) {
-      logger.error('获取用户信息失败:', error);
+      logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }
@@ -66,7 +66,7 @@ class UserController {
       logger.info(`更新用户信息成功: ${user._id}`);
       return res.json({ success: true, user });
     } catch (error: any) {
-      logger.error('更新用户信息失败:', error);
+      logger.error(`更新用户信息失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }

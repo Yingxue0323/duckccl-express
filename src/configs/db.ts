@@ -10,8 +10,8 @@ export const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     logger.info('MongoDB Atlas 连接成功');
-  } catch (error) {
-    logger.error('MongoDB Atlas 连接失败:', error);
+  } catch (error: any) {
+    logger.error(`MongoDB Atlas 连接失败: ${JSON.stringify({ error: error.message })}`);
     process.exit(1);
   }
 };
