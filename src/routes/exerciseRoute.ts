@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { exerciseController } from '../controllers/exerciseController';
-import { authMiddleware, vipMiddleware } from '../middlewares/authMW';
+import { authMiddleware } from '../middlewares/authMW';
 
 const router = Router();
 
@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', authMiddleware, exerciseController.getAllExercises);
 
 // 获取单个练习详情
-router.get('/:id', authMiddleware, vipMiddleware, exerciseController.getExerciseById);
+router.get('/:id', authMiddleware, exerciseController.getExerciseById);
 
 // 更新学习状态（已学/未学）
 // router.patch('/:id/learning', authMiddleware, exerciseController.updateLearningStatus);
