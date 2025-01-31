@@ -4,8 +4,9 @@ import { CATEGORIES, Category,
 
 export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;
+  seq: number;
   title: string;
-  intro: string;
+  intro: mongoose.Types.ObjectId;
   dialogs: mongoose.Types.ObjectId[];
   category: Category;
   source: ExerciseSource;
@@ -16,12 +17,19 @@ export interface IExercise extends Document {
 }
 
 const ExerciseSchema = new Schema({
+  seq: {
+    type: Number,
+    required: true,
+    unique: true,
+    index: true
+  },
   title: { 
     type: String, 
     required: true 
   },
   intro: { 
-    type: String, 
+    type: Schema.Types.ObjectId,
+    ref: 'Intro',
     required: true 
   },
   dialogs: [{ 

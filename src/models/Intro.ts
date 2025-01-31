@@ -16,7 +16,8 @@ const IntroSchema = new Schema({
   exerciseId: {
     type: Schema.Types.ObjectId,
     ref: 'Exercise',
-    required: true
+    required: true,
+    index: true
   },
   text: {
     type: String,
@@ -35,8 +36,5 @@ const IntroSchema = new Schema({
 }, {
   timestamps: true
 });
-
-// 确保每个练习题的对话序号唯一
-IntroSchema.index({ exerciseId: 1 }, { unique: true });
 
 export default mongoose.model<IIntro>('Intro', IntroSchema); 

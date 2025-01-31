@@ -51,6 +51,15 @@ class UserService {
     ) as IUser;
     return user;
   }
+
+  async checkVIPStatus(userId: string): Promise<boolean> {
+    const user = await User.findById(userId);
+    const now = new Date().getTime();
+    if (user?.isVIP && user.vipExpireAt && user.vipExpireAt.getTime() > now) {
+      return true;
+    }
+    return false;
+  }
   
   // 清除会话(登出)，由auth中的wechatLogout实现
   async clearSession(userId: string) {

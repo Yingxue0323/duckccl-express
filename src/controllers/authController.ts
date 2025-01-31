@@ -9,7 +9,7 @@ class AuthController {
       const { code } = req.body;
       const { user, token } = await authService.wechatLogin(code);
 
-      logger.info(`登录成功: ${user._id} ${token}`);
+      logger.info(`登录成功: 用户id: ${user._id}\n token: ${token}`);
       return res.json({ user, token });
 
     } catch (error: any) {
@@ -44,7 +44,7 @@ class AuthController {
     try {
       const result = await authService.wechatLogout(req.user._id.toString());
     
-      logger.info(`登出成功: ${result.success}`);
+      logger.info(`登出成功: 用户id: ${req.user._id}`);
       return res.json({ success: result.success });
 
     } catch (error: any) {

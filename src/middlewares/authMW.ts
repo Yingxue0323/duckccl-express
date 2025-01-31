@@ -4,6 +4,8 @@ import { AuthError } from '../utils/errors';
 import { verifyToken } from '../utils/jwt';
 import logger from '../utils/logger';
 import { config } from '../configs';
+import { exerciseService } from '../services/exerciseService';
+import { IExercise } from '../models/Exercise';
 
 // 认证中间件
 export const authMiddleware = async (req: ExpressRequest, res: Response, next: NextFunction) => {
@@ -71,10 +73,29 @@ export const ipMiddleware = (req: ExpressRequest, res: Response, next: NextFunct
   }
 };
 
-// VIP 权限中间件
-export const vipMiddleware = (req: ExpressRequest, res: Response, next: NextFunction) => {
-  if (!req.user?.isVIP) {
-    return res.status(403).json({ message: '需要VIP权限' });
+// VIP 权限中间件，获取单个练习时检查
+export const vipMiddleware = async (req: ExpressRequest, res: Response, next: NextFunction) => {
+  try {
+    const exerciseId = req.params.exerciseId;
+    const exercise = await exerciseService.getExerciseById(exerciseId, req.user);
+    
+    if (!exercise) {
+      return res.status(404).json({ message: '请输入正确的练习ID' });
+    }
+
+    // VIP内容检查
+    if (exercise.isVIPOnly && !req.user?.isVIP) {
+      logger.warn(`非VIP用户 ${req.user?._id} 尝试访问VIP练习 ${exerciseId}`);
+      return res.status(403).json({
+        code: 'VIP_REQUIRED',
+        message: '此内容需要VIP会员'
+      });
+    }
+
+    req.exercise = exercise as IExercise;
+    next();
+  } catch (error: any) {
+    logger.error(`${req.method} ${req.url} - VIP权限检查失败: ${error.message}`);
+    next(error);
   }
-  next();
 };
