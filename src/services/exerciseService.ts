@@ -105,13 +105,46 @@ class ExerciseService {
   }
 
   // 更新学习状态
-  // async updateLearningStatus(userId: string, exerciseId: string, isLearned: boolean): Promise<any> {
-  //   return ExerciseLearning.findOneAndUpdate(
-  //     { userId, exerciseId },
-  //     { isLearned },
-  //     { upsert: true, new: true }
-  //   );
-  // }
+  async updateLearningStatus(userId: string, exerciseId: string, isLearned: boolean): Promise<any> {
+    return exeLearnService.updateLearningStatus(userId, exerciseId, isLearned);
+  }
+
+  // 更新收藏状态
+  async updateFavoriteStatus(userId: string, exerciseId: string, isFavorite: boolean): Promise<any> {
+    return exeFavService.updateFavoriteStatus(userId, exerciseId, isFavorite);
+  }
+
+  //----------------------------------管理员----------------------------------
+  // 创建练习
+  async createExercise(exercise: IExercise): Promise<any> {
+    const newExercise = await Exercise.create(exercise);
+    return {
+      message: 'CREATE_EXERCISE_SUCCESS',
+      exercise: newExercise
+    }
+  }
+
+  // 更新练习
+  async updateExercise(exercise: IExercise): Promise<any> {
+    const updatedExercise = await Exercise.findByIdAndUpdate(
+      exercise._id, 
+      exercise, 
+      { new: true }
+    );
+    return {
+      message: 'UPDATE_EXERCISE_SUCCESS',
+      exercise: updatedExercise
+    }
+  }
+
+  // 删除练习
+  async deleteExercise(exerciseId: string): Promise<any> {
+    await Exercise.findByIdAndDelete(exerciseId);
+    return {
+      message: 'DELETE_EXERCISE_SUCCESS',
+      exerciseId: exerciseId
+    }
+  }
 }
 
 export const exerciseService = new ExerciseService(); 

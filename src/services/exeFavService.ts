@@ -3,11 +3,6 @@ import ExerciseFavorite from '../models/ExerciseFavorite';
 import WordFavorite from '../models/WordFavorite';
 
 class ExeFavService {
-  // 新增收藏的练习
-  async addFavoriteExercise(userId: string, exerciseId: string) {
-    return ExerciseFavorite.create({ userId, exerciseId });
-  }
-
   // 获取所有收藏的itemId列表
   async _getFavoritesByType(userId: string, itemType: string): Promise<string[]> {
     const favoriteList = await ExerciseFavorite.find({
@@ -70,10 +65,32 @@ class ExeFavService {
   //   return exercise;
   // }
 
-  // // 取消收藏
-  // async cancelFavoriteExercise(userId: string, exerciseId: string) {
-  //   return ExerciseFavorite.findOneAndDelete({ userId, exerciseId });
-  // }
+  // 更新收藏状态
+  async updateFavoriteStatus(userId: string, exerciseId: string, isFavorite: boolean): Promise<any> {
+    if (isFavorite) {
+      return this._addFavoriteExercise(userId, exerciseId);
+    } else {
+      return this._deleteFavoriteExercise(userId, exerciseId);
+    }
+  }
+
+  // 新增收藏的练习
+  async _addFavoriteExercise(userId: string, exerciseId: string): Promise<any> {
+    await ExerciseFavorite.create({ userId, exerciseId });
+    return {
+      message: 'ADD_FAVORITE_EXERCISE_SUCCESS',
+      data: { isFavorite: true }
+    };
+  }
+  
+  // 删除收藏的练习
+  async _deleteFavoriteExercise(userId: string, exerciseId: string): Promise<any> {
+    await ExerciseFavorite.deleteOne({ userId, exerciseId });
+    return {
+      message: 'DELETE_FAVORITE_EXERCISE_SUCCESS',
+      data: { isFavorite: false }
+    };
+  }
 }
 
 export const exeFavService = new ExeFavService(); 

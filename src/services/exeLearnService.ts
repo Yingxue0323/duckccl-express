@@ -54,6 +54,19 @@ class ExeLearnService {
     const result = await ExerciseLearning.findOneAndDelete({ userId, exerciseId });
     return result ? true : false;
   }
+
+  // 更新学习状态
+  async updateLearningStatus(userId: string, exerciseId: string, isLearned: boolean): Promise<any> {
+    await ExerciseLearning.findOneAndUpdate(
+      { userId, exerciseId },
+      { isLearned },
+      { upsert: true, new: true }
+    );
+    return {
+        message: 'UPDATE_LEARNING_STATUS_SUCCESS',
+        data: { isLearned }
+    };
+  }
 }
 
 export const exeLearnService = new ExeLearnService(); 

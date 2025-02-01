@@ -34,28 +34,79 @@ class ExerciseController {
   }
 
   // 更新学习状态
-  // async updateLearningStatus(req: Request, res: Response) {
-  //   try {
-  //     const status = await exerciseService.updateLearningStatus(
-  //       req.user._id,
-  //       req.params.id,
-  //       req.body.isLearned
-  //     );
-  //     return res.json(status);
-  //   } catch (error: any) {
-  //     return res.status(500).json({ message: error.message });
-  //   }
-  // }
+  async updateLearningStatus(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.id;
+      const userId = req.user._id.toString();
+      const isLearned = req.body.isLearned;
+      const status = await exerciseService.updateLearningStatus(userId, exerciseId, isLearned);
 
-  // // 收藏/取消收藏练习
-  // async updateFavoriteStatus(req: Request, res: Response) {
-  //   try {
-  //     const status = await exerciseService.updateFavoriteStatus(req.user._id, req.params.id, req.body.isFavorite);
-  //     return res.json(status);
-  //   } catch (error: any) {
-  //     return res.status(500).json({ message: error.message });
-  //   }
-  // }
+      logger.info(`更新学习状态成功: ${status.message}`);
+      return res.json(status);
+    } catch (error: any) {
+      logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // 收藏/取消收藏练习
+  async updateFavoriteStatus(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.id;
+      const userId = req.user._id.toString();
+      const isFavorite = req.body.isFavorite;
+      const status = await exerciseService.updateFavoriteStatus(userId, exerciseId, isFavorite);
+
+      logger.info(`更新收藏状态成功: ${status.message}`);
+      return res.json(status);
+    } catch (error: any) {
+      logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  //管理员
+  // 创建练习
+  async createExercise(req: Request, res: Response) {
+    try { 
+      const exercise = req.body;
+      const result = await exerciseService.createExercise(exercise);
+
+      logger.info(`创建练习成功: ${result.message}`);
+      return res.json(result);
+    } catch (error: any) {
+      logger.error(`创建练习失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // 更新练习
+  async updateExercise(req: Request, res: Response) {
+    try {
+      const exercise = req.body;
+      const result = await exerciseService.updateExercise(exercise);
+
+      logger.info(`更新练习成功: ${result.message}`);
+      return res.json(result);
+    } catch (error: any) {
+      logger.error(`更新练习失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // 删除练习
+  async deleteExercise(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.id;
+      const result = await exerciseService.deleteExercise(exerciseId);
+
+      logger.info(`删除练习成功: ${result.message}`);
+      return res.json(result);
+    } catch (error: any) {
+      logger.error(`删除练习失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
 }
 
 export const exerciseController = new ExerciseController();
