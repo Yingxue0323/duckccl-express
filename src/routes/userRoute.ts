@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { userController } from '../controllers/userController';
-import { authMiddleware, ipMiddleware } from '../middlewares/authMW';
+import { authMiddleware } from '../middlewares/authMW';
 
 const router = Router();
 
 
-// 获取所有用户，IP限制，目前只对ying开放
-router.get('/', ipMiddleware, userController.getAllUsers);
+// 获取所有用户
+router.get('/', authMiddleware, userController.getAllUsers);
 
 // 获取用户信息 by id/openid
 router.get('/:id', authMiddleware, userController.getUserById);

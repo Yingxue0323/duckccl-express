@@ -4,6 +4,7 @@ import { authMiddleware } from '../middlewares/authMW';
 
 const router = Router();
 
+// ---------------------------------------------用户---------------------------------------------
 // 微信登录
 router.post('/login', authController.wechatLogin);
 
