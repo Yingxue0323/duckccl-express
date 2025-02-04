@@ -27,11 +27,10 @@ const AudioContentSchema = new Schema({
 export interface IAudio extends Document {
   _id: mongoose.Types.ObjectId;
   dialogId: mongoose.Types.ObjectId;
+  exerciseId: mongoose.Types.ObjectId;
   sequence: 1 | 2;
   englishContent: AudioContent;
-  contents: {
-    [key in LanguageCode]?: AudioContent;  //考虑英语使用者
-  };
+  contents: Map<LanguageCode, AudioContent>;
 
   createdAt: Date;
   updatedAt: Date;
@@ -41,6 +40,12 @@ const AudioSchema = new Schema({
   dialogId: {
     type: Schema.Types.ObjectId,
     ref: 'Dialog',
+    required: true,
+    index: true
+  },
+  exerciseId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Exercise',
     required: true
   },
   sequence: {

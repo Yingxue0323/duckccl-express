@@ -3,7 +3,17 @@ import { userService } from '../services/userService';
 import { AuthError } from '../utils/errors';
 import { verifyToken } from '../utils/jwt';
 import logger from '../utils/logger';
-import { config } from '../configs';
+import { config } from '../configs/index';
+
+// 扩展 Request 类型
+declare global {
+  namespace Express {
+    interface Request {
+      targetUserId?: string;  // 添加目标用户ID
+      isAdmin: boolean;      // 是否管理员
+    }
+  }
+}
 
 // 认证中间件
 export const authMiddleware = async (req: ExpressRequest, res: Response, next: NextFunction) => {
@@ -51,22 +61,31 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
   }
 };
 
-// 管理员权限中间件，ip白名单
-export const ipMiddleware = (req: ExpressRequest, res: Response, next: NextFunction) => {
+// 管理员权限
+export const adminMiddleware = async (req: ExpressRequest, res: Response, next: NextFunction) => {
   try {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const adminKey = req.headers['x-admin-key'];
+    const targetUserId = req.headers['x-target-user'] as string;  // 从header中获取目标用户ID
     
-    if (!ip || !config.adminIp.includes(ip as string)) {
-      logger.error(`${req.method} ${req.url} - 需要管理员权限`);
-      return res.status(403).json({
-        success: false,
-        message: '需要管理员权限'
-      });
+    if (adminKey !== config.adminSecretKey) {
+      logger.error(`${req.method} ${req.url} - 无管理员权限`);
+      throw new AuthError('NO_ADMIN_PERMISSION', '无管理员权限');
     }
-    
+
+    req.isAdmin = true;
+    if (targetUserId) {
+      req.targetUserId = targetUserId;
+      logger.info(`管理员正在操作用户(${targetUserId})信息`);
+    }
+
     next();
   } catch (error: any) {
     logger.error(`${req.method} ${req.url} - 认证失败: ${error.message}`);
-    return res.status(401).json({ message: '认证失败' });
+    if (error instanceof AuthError) {
+      return res.status(401).json({
+        code: error.code,
+        message: error.message
+      });
+    }
   }
 };

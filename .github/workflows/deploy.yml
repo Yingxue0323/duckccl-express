@@ -24,51 +24,64 @@ jobs:
       env:
         NODE_ENV: development
         PORT: 3000
+        ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
         WX_APPID: ${{ secrets.WX_APPID }}
         WX_SECRET: ${{ secrets.WX_SECRET }}
         WX_PUBLIC_KEY: ${{ secrets.WX_PUBLIC_KEY }}
         WX_PRIVATE_KEY: ${{ secrets.WX_PRIVATE_KEY }}
         WX_CERTIFICATE: ${{ secrets.WX_CERTIFICATE }}
+        AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        S3_REGION: ${{ secrets.S3_REGION }}
+        S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
-        ADMIN_IP: ${{ secrets.ADMIN_IP }}
       run: |
         # 首次创建目录
         sudo mkdir -p /var/www/koala-ccl
 
         # 编译ts
         npm run build
-        echo "编译完成，开始构建..."
+        echo "编译完成，开始构建🏠..."
 
          # 只同步变化的文件
-        sudo rsync -av --delete dist/ /var/www/koala-ccl/dist/
+        sudo rsync -av --delete \
+        --exclude=".git" \
+        --exclude="node_modules" \
+        --exclude="package-lock.json" \
+        dist/ /var/www/koala-ccl/dist/
+        
         sudo rsync -av public/ /var/www/koala-ccl/public/
-        sudo rsync -av package*.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
-        echo "同步完成，开始检查依赖更新..."
+        sudo rsync -av package.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
+        echo "同步完成，开始检查依赖更新🔍..."
 
         # 只在 package.json 变化时更新依赖
-        if ! cmp -s package.json /var/www/koala-ccl/package.json; then
+        if [ -f "/var/www/koala-ccl/package.json" ] && ! cmp -s package.json /var/www/koala-ccl/package.json; then
           cd /var/www/koala-ccl
-          npm install
+          npm install  # 会自动生成新的 package-lock.json
         fi
-        echo "依赖更新完成，开始创建.env文件..."
+        echo "依赖更新完成，开始创建.env文件🍃..."
 
         # 创建环境变量文件
-        env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_)' > /var/www/koala-ccl/.env
-        echo ".env文件创建完成，开始设置权限..."
+        env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_|ADMIN_SECRET_KEY|AWS_|S3)' > /var/www/koala-ccl/.env
+        echo ".env文件创建完成，开始设置权限🔒..."
         
         # 设置权限
         chmod 600 /var/www/koala-ccl/.env
         chmod -R 755 /var/www/koala-ccl
-        echo "权限设置完成，开始重启应用..."
+        echo "权限设置完成，开始重启应用🔄..."
 
-        # PM2 启动/重启
-        echo "配置并启动 PM2..."
-        if pm2 list | grep -q "koala"; then
-          pm2 reload koala --update-env
+        # 只重启 PM2 如果代码有变化
+        if rsync -anic dist/ /var/www/koala-ccl/dist/ | grep -q '^>'; then
+          echo "Code changed, restarting PM2..."
+          if pm2 list | grep -q "koala"; then
+            pm2 reload koala --update-env
+          else
+            pm2 start dist/app.js --name koala
+          fi
+          pm2 save
         else
-          pm2 start dist/app.js --name koala
+          echo "No code changes detected, skipping PM2 restart."
         fi
-        pm2 save
         echo "应用重启完成✅"

@@ -6,8 +6,8 @@ export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;
   seq: number;
   title: string;
-  intro: mongoose.Types.ObjectId;
-  dialogs: mongoose.Types.ObjectId[];
+  introId: mongoose.Types.ObjectId;
+  dialogIds: mongoose.Types.ObjectId[];
   category: Category;
   source: ExerciseSource;
   isVIPOnly: boolean;
@@ -27,12 +27,12 @@ const ExerciseSchema = new Schema({
     type: String, 
     required: true 
   },
-  intro: { 
+  introId: { 
     type: Schema.Types.ObjectId,
     ref: 'Intro',
     required: true 
   },
-  dialogs: [{ 
+  dialogIds: [{ 
     type: Schema.Types.ObjectId,
     ref: 'Dialog',
     required: true 
@@ -40,7 +40,8 @@ const ExerciseSchema = new Schema({
   category: { 
     type: String, 
     enum: Object.values(CATEGORIES),
-    required: true 
+    required: true,
+    index: true
   },
   source: {
     type: String,
@@ -49,7 +50,8 @@ const ExerciseSchema = new Schema({
   },
   isVIPOnly: { 
     type: Boolean, 
-    default: false 
+    default: false,
+    required: true
   }
 }, {
   timestamps: true 

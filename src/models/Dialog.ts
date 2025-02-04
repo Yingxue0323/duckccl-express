@@ -4,7 +4,7 @@ export interface IDialog extends Document {
   _id: mongoose.Types.ObjectId;
   exerciseId: mongoose.Types.ObjectId; 
   sequence: number;
-  audios: mongoose.Types.ObjectId[];
+  audioIds: mongoose.Types.ObjectId[];
 
   createdAt: Date;
   updatedAt: Date;
@@ -20,7 +20,7 @@ const DialogSchema = new Schema({
     type: Number,
     required: true
   },
-  audios: [{
+  audioIds: [{
     type: Schema.Types.ObjectId,
     ref: 'Audio',
     required: true

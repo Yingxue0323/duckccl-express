@@ -19,7 +19,8 @@ const ExerciseFavoriteSchema = new Schema({
   itemId: {
     type: Schema.Types.ObjectId,
     refPath: 'itemType',
-    required: true
+    required: true,
+    index: true
   },
   itemType: {
     type: String,

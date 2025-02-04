@@ -1,5 +1,5 @@
 import User, { IUser } from '../models/User';
-import { LANGUAGES, LOGIN_TYPE } from '../utils/constants';
+import { LanguageCode, LANGUAGES, LOGIN_TYPE } from '../utils/constants';
 import { generateToken } from '../utils/jwt';
 
 class UserService {
@@ -52,6 +52,11 @@ class UserService {
     return user;
   }
 
+  /**
+   * 检查用户是否为VIP
+   * @param {string} userId - 用户ID
+   * @returns {Promise<boolean>} 返回用户是否为VIP
+   */
   async checkVIPStatus(userId: string): Promise<boolean> {
     const user = await User.findById(userId);
     const now = new Date().getTime();
@@ -68,6 +73,12 @@ class UserService {
       { $set: { sessionKey: '' } }
     ) as IUser;
     return { success: true };
+  }
+
+  // 获取用户偏好语言
+  async getUserLang(userId: string): Promise<LanguageCode> {
+    const user = await User.findById(userId);
+    return user?.lang || LANGUAGES.CHINESE_SIMPLIFIED;
   }
 } 
 

@@ -48,7 +48,7 @@ const transports = [
     datePattern: 'YYYY-MM-DD',
     level: 'error',
     maxSize: '20m',     // 单个文件最大 20MB
-    maxFiles: '14d',    // 保留 14 天的日志
+    maxFiles: '1d',    // 保留 14 天的日志
     zippedArchive: true // 压缩旧日志
   }),
   
@@ -57,7 +57,7 @@ const transports = [
     filename: path.join('logs', 'all-%DATE%.log'),
     datePattern: 'YYYY-MM-DD',
     maxSize: '20m',
-    maxFiles: '14d',
+    maxFiles: '1d',
     zippedArchive: true
   })
 ];

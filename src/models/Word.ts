@@ -28,9 +28,7 @@ export interface IWord extends Document {
   _id: mongoose.Types.ObjectId;
   word: string;
   audioUrl: string;
-  translations: {
-    [key in LanguageCode]?: Translation
-  };
+  translations: Map<LanguageCode, Translation>;
   category: Category;
 
   createdAt: Date;
@@ -40,7 +38,8 @@ export interface IWord extends Document {
 const WordSchema = new Schema({
   word: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   audioUrl: {
     type: String,

@@ -33,13 +33,29 @@ class ExeFavService {
     return favoriteList.map(status => status.wordId.toString());
   }
 
-  // 获取单个练习是否收藏
-  async getFavoriteStatusByExeId(userId: string, exerciseId: string): Promise<boolean> {
+ /**
+  * 查看某练习是否收藏
+  * @param {string} userId - 用户ID
+  * @param {string} exerciseId - 练习ID
+  * @returns {Promise<{isFavorite: boolean}>} 返回是否收藏
+  */
+  async checkFavStatusByExeId(userId: string, exerciseId: string): Promise<{isFavorite: boolean}> {
     const favoriteStatus = await ExerciseFavorite.findOne({
       userId,
-      exerciseId
+      itemId: exerciseId,
+      itemType: 'Exercise'
     });
-    return favoriteStatus ? true : false;
+    return favoriteStatus ? { isFavorite: true } : { isFavorite: false };
+  }
+
+ /**
+  * 查看单个音频是否收藏
+  * @param {string} userId - 用户ID
+  * @param {string} audioId - 音频ID
+  * @returns {Promise<boolean>} 返回是否收藏
+  */
+  async checkFavStatusById(userId: string, audioId: string): Promise<boolean> {
+    return await ExerciseFavorite.findOne({ userId, itemId: audioId, itemType: 'Audio' }) ? true : false;
   }
 
   // 获取单个练习详情
@@ -65,31 +81,51 @@ class ExeFavService {
   //   return exercise;
   // }
 
-  // 更新收藏状态
-  async updateFavoriteStatus(userId: string, exerciseId: string, isFavorite: boolean): Promise<any> {
-    if (isFavorite) {
-      return this._addFavoriteExercise(userId, exerciseId);
-    } else {
-      return this._deleteFavoriteExercise(userId, exerciseId);
+ /**
+  * 更新收藏状态
+  * @param {string} userId - 用户ID
+  * @param {string} itemId - 收藏ID
+  * @param {string} itemType - 收藏类型
+  * @param {boolean} isFavorite - 收藏状态
+  * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
+  */
+  async updateFavoriteStatus(userId: string, itemId: string, itemType: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
+    if (isFavorite && itemType === 'Exercise') {
+      this._addFavoriteExercise(userId, itemId);
+      return { isFavorite: true };
+    } else if (!isFavorite && itemType === 'Exercise') {
+      this._deleteFavoriteExercise(itemId);
+      return { isFavorite: false };
+    } else if (isFavorite && itemType === 'Audio') {
+      this._addFavoriteAudio(userId, itemId);
+      return { isFavorite: true };
+    } else if (!isFavorite && itemType === 'Audio') {
+      this._deleteFavoriteAudio(itemId);
+      return { isFavorite: false };
     }
+    return { isFavorite: false };
   }
 
-  // 新增收藏的练习
-  async _addFavoriteExercise(userId: string, exerciseId: string): Promise<any> {
-    await ExerciseFavorite.create({ userId, exerciseId });
-    return {
-      message: 'ADD_FAVORITE_EXERCISE_SUCCESS',
-      data: { isFavorite: true }
-    };
+  // 新增收藏练习
+  async _addFavoriteExercise(userId: string, itemId: string): Promise<boolean> {
+    await ExerciseFavorite.create({ userId, itemId, itemType: 'Exercise' });
+    return true;
   }
-  
-  // 删除收藏的练习
-  async _deleteFavoriteExercise(userId: string, exerciseId: string): Promise<any> {
-    await ExerciseFavorite.deleteOne({ userId, exerciseId });
-    return {
-      message: 'DELETE_FAVORITE_EXERCISE_SUCCESS',
-      data: { isFavorite: false }
-    };
+  // 删除收藏练习
+  async _deleteFavoriteExercise(itemId: string): Promise<boolean> {
+    await ExerciseFavorite.deleteOne({ itemId });
+    return true;
+  }
+
+  // 新增收藏音频
+  async _addFavoriteAudio(userId: string, itemId: string): Promise<boolean> {
+    await ExerciseFavorite.create({ userId, itemId, itemType: 'Audio' });
+    return true;
+  }
+  // 删除收藏音频
+  async _deleteFavoriteAudio(itemId: string): Promise<boolean> {
+    await ExerciseFavorite.deleteOne({ itemId });
+    return true;
   }
 }
 
