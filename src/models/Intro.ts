@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IIntro extends Document {
   _id: mongoose.Types.ObjectId;
-  exerciseId: mongoose.Types.ObjectId;
   text: string;
 
   url: string;
@@ -13,12 +12,6 @@ export interface IIntro extends Document {
 }
 
 const IntroSchema = new Schema({
-  exerciseId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Exercise',
-    required: true,
-    index: true
-  },
   text: {
     type: String,
     required: true

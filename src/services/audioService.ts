@@ -4,43 +4,24 @@ import { userService } from './userService';
 import { getSignedUrl } from '../utils/s3';
 
 class AudioService {
-  // 获取对话音频列表
-  async getAudiosByDialogId(dialogId: string, userId: string): Promise<any> {
-    if (!dialogId || !userId) {
-      throw new Error('Dialog ID and User ID are required');
-    }
-    
-    const [userLang, audios] = await Promise.all([
-      userService.getUserLang(userId),
-      Audio.find({ dialogId }).sort({ sequence: 1 })
-    ]);
+ /**
+  * 创建音频
+  * @param audio 音频对象(sequence: number, englishContent: {url: string, duration: number, text: string}, contents: {language: {url: string, duration: number, text: string}})
+  * @returns 创建后的音频对象
+  */
+  async createAudio(audio: any): Promise<IAudio> {
+    const newAudio = await Audio.create(audio);
+    return newAudio;
+  }
 
-    const audioList = await Promise.all(audios.map(async (audio: IAudio) => {
-      const content = audio.englishContent;
-      const translatedContent = audio.contents.get(userLang);
-      
-      if (!translatedContent) {
-        throw new Error(`No translated content found for language: ${userLang}`);
-      }
-      
-      const signedUrl = await getSignedUrl(translatedContent.url);
-      const isFavorite = exeFavService.checkFavStatusById(userId, audio._id.toString());
-      
-      return {
-        sequence: audio.sequence,
-        englishContent: content,
-        translatedContent: translatedContent,
-        url: signedUrl,
-        isFavorite: isFavorite
-      };
-    }));
-
-    // 返回带统计值的
-    return {
-      dialogId: dialogId,
-      audioCount: audios.length,
-      audios: audioList,
-    };
+ /**
+  * 获取所有音频列表
+  * @param userId 用户ID
+  * @returns 音频列表
+  */
+  async getAllAudios(): Promise<IAudio[]> {
+    const audios = await Audio.find();
+    return audios;
   }
 
  /**
@@ -50,79 +31,83 @@ class AudioService {
   * @returns 音频详情(可直接播放的url)
   */
   async getAudioById(audioId: string, userId: string): Promise<{
-    _id: string; sequence: number; isFavorite: boolean; englishText: string; englishUrl: string; 
+    audioId: string; sequence: number; isFavorite: boolean; englishText: string; englishUrl: string; 
     englishDuration: number; translatedText: string; translatedUrl: string; translatedDuration: number; }> {
-    if (!audioId || !userId) {
-      throw new Error('Audio ID and User ID are required');
-    }
+    if (!audioId || !userId) throw new Error('Audio ID and User ID are required');
 
     const [audio, isFavorite, userLang] = await Promise.all([
       Audio.findById(audioId),
-      exeFavService.checkFavStatusById(userId, audioId), // 是否收藏，返回boolean
+      exeFavService.checkFavStatusByAudioId(userId, audioId), // 是否收藏，返回boolean
       userService.getUserLang(userId)
     ]);
-    if (!audio || !userLang) {
-      throw new Error('Audio not found');
-    }
+    if (!audio || !userLang) throw new Error('Audio not found');
 
     const englishUrl = await getSignedUrl(audio.englishContent.url);
 
     const content = audio.contents.get(userLang);
-    if (!content) {
-      throw new Error(`No content found for language: ${userLang}`);
-    }
+    if (!content) throw new Error(`No content found for language: ${userLang}`);
+
     const translatedUrl = await getSignedUrl(content.url);
 
     return {
-        _id: audio._id.toString(),
-        sequence: audio.sequence,
-        isFavorite: isFavorite,
+      audioId: audio._id.toString(),
+      sequence: audio.sequence,
+      isFavorite: isFavorite,
 
-        englishText: audio.englishContent.text,
-        englishUrl: englishUrl,
-        englishDuration: audio.englishContent.duration,
+      englishText: audio.englishContent.text,
+      englishUrl: englishUrl,
+      englishDuration: audio.englishContent.duration,
 
-        translatedText: content.text,
-        translatedUrl: translatedUrl,
-        translatedDuration: content.duration,
+      translatedText: content.text,
+      translatedUrl: translatedUrl,
+      translatedDuration: content.duration,
     };
   }
 
-  // 更新收藏状态
-  async updateFavoriteStatus(userId: string, audioId: string, isFavorite: boolean): Promise<any> {
-    return exeFavService.updateFavoriteStatus(userId, audioId, 'Audio', isFavorite);
+ /**
+  * 更新音频
+  * @param audioId 音频ID
+  * @param audio 音频(sequence: number, englishContent/contents: {url: string, duration: number, text: string})
+  * @returns 更新后的音频对象
+  */
+  async updateAudio(audioId: string, audio: any): Promise<boolean> {
+    const updatedAudio = await Audio.findByIdAndUpdate(audioId, audio, { new: true });
+    if(!updatedAudio) throw new Error('Audio not found');
+    return true;
   }
 
-  //----------------------------------管理员----------------------------------
-  // 创建音频
-  async createAudio(audio: IAudio): Promise<any> {
-    const newAudio = await Audio.create(audio);
-    return {
-      message: 'CREATE_AUDIO_SUCCESS',
-      audio: newAudio
-    }
+ /**
+  * 删除音频
+  * @param audioId 音频ID
+  * @returns 是否删除成功
+  */
+  async deleteAudio(audioId: string): Promise<boolean> {
+    const audio = await Audio.findByIdAndDelete(audioId);
+    if(!audio) throw new Error('Audio not found');
+    return true;
   }
 
-  // 更新音频
-  async updateAudio(audio: IAudio): Promise<any> {
-    const updatedAudio = await Audio.findByIdAndUpdate(
-      audio._id, 
-      audio, 
-      { new: true }
-    );
-    return {
-      message: 'UPDATE_AUDIO_SUCCESS',
-      audio: updatedAudio
-    }
+  /**
+   * 获取收藏状态
+   * @param {string} userId - 用户ID
+   * @param {string} audioId - 音频ID
+   * @returns {Promise<any>} 返回收藏状态
+   */
+  async getFavoriteStatus(userId: string, audioId: string): Promise<{isFavorite: boolean}> {
+    const isFavorite = await exeFavService.checkFavStatusByAudioId(userId, audioId);
+    return { isFavorite: isFavorite };
   }
 
-  // 删除音频
-  async deleteAudio(audioId: string): Promise<any> {
-    await Audio.findByIdAndDelete(audioId);
-    return {
-      message: 'DELETE_AUDIO_SUCCESS',
-      audioId: audioId
-    }
+  /**
+   * 更新收藏状态
+   * @param {string} userId - 用户ID
+   * @param {string} audioId - 音频ID
+   * @param {boolean} isFavorite - 收藏状态
+   * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
+   */
+  async updateFavoriteStatus(userId: string, audioId: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
+    const newStatus = await exeFavService.updateFavoriteStatus(userId, audioId, 'Audio', isFavorite);
+    return { isFavorite: newStatus.isFavorite };
   }
 }
 

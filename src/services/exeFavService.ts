@@ -37,15 +37,15 @@ class ExeFavService {
   * 查看某练习是否收藏
   * @param {string} userId - 用户ID
   * @param {string} exerciseId - 练习ID
-  * @returns {Promise<{isFavorite: boolean}>} 返回是否收藏
+  * @returns {Promise<boolean>} 返回是否收藏
   */
-  async checkFavStatusByExeId(userId: string, exerciseId: string): Promise<{isFavorite: boolean}> {
+  async checkFavStatusByExeId(userId: string, exerciseId: string): Promise<boolean> {
     const favoriteStatus = await ExerciseFavorite.findOne({
       userId,
       itemId: exerciseId,
       itemType: 'Exercise'
     });
-    return favoriteStatus ? { isFavorite: true } : { isFavorite: false };
+    return favoriteStatus ? true : false;
   }
 
  /**
@@ -54,8 +54,13 @@ class ExeFavService {
   * @param {string} audioId - 音频ID
   * @returns {Promise<boolean>} 返回是否收藏
   */
-  async checkFavStatusById(userId: string, audioId: string): Promise<boolean> {
-    return await ExerciseFavorite.findOne({ userId, itemId: audioId, itemType: 'Audio' }) ? true : false;
+  async checkFavStatusByAudioId(userId: string, audioId: string): Promise<boolean> {
+    const favoriteStatus = await ExerciseFavorite.findOne({
+      userId,
+      itemId: audioId,
+      itemType: 'Audio'
+    });
+    return favoriteStatus ? true : false;
   }
 
   // 获取单个练习详情

@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { CATEGORIES, Category,
          EXERCISE_SOURCES, ExerciseSource } from '../utils/constants';
+import Dialog from './Dialog';
 
 export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;
@@ -55,6 +56,24 @@ const ExerciseSchema = new Schema({
   }
 }, {
   timestamps: true 
+});
+
+ExerciseSchema.pre('deleteOne', { document: true }, async function() {
+  // 删除所有关联的对话
+  await Dialog.updateMany(
+    { exerciseId: this._id },
+    { $unset: { exerciseId: 1 } }
+  );
+});
+
+ExerciseSchema.pre('findOneAndDelete', async function() {
+  const doc = await this.model.findOne(this.getQuery());
+  if (doc) {
+    await Dialog.updateMany(
+      { exerciseId: doc._id },
+      { $unset: { exerciseId: 1 } }
+    );
+  }
 });
 
 export default mongoose.model<IExercise>('Exercise', ExerciseSchema);

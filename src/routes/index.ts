@@ -1,7 +1,7 @@
 import { Express } from 'express';
 // import wordRoute from './wordRoute';
-// import audioRoute from './audioRoute';
-// import dialogRoute from './dialogRoute';
+import audioRoute from './audioRoute';
+import dialogRoute from './dialogRoute';
 import exerciseRoute from './exerciseRoute';
 import userRoute from './userRoute';
 import authRoute from './authRoute';
@@ -20,10 +20,10 @@ export function registerRoutes(app: Express) {
 //   app.use('/api/v1/words', wordRoute);
 
   // 音频相关路由
-  // app.use('/api/v1/audios', audioRoute);
+  app.use('/api/v1/audios', audioRoute);
 
   // 对话相关路由
-  // app.use('/api/v1/dialogs', dialogRoute);
+  app.use('/api/v1/dialogs', dialogRoute);
   
   // 练习相关路由
   app.use('/api/v1/exercises', exerciseRoute);

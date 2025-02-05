@@ -5,6 +5,8 @@ import { userService } from './userService';
 import { introService } from './introService';
 import { dialogService } from './dialogService';
 import { Category, ExerciseSource } from '../utils/constants';
+import mongoose from 'mongoose';
+import Dialog from '../models/Dialog';
 
 class ExerciseService {
 
@@ -84,18 +86,17 @@ class ExerciseService {
     }
 
     const isUserVIP = await userService.checkVIPStatus(userId);
+    const exercise = await Exercise.findById(exerciseId);
+    if (!exercise) throw new Error('Exercise not found');
 
-    const [exercise, intro, dialogs, isLearned, isFavorite] = await Promise.all([
-      Exercise.findById(exerciseId),
-      introService.getIntroByExeId(exerciseId, userId),
-      dialogService.getDialogsByExerciseId(exerciseId, userId),
+    const [intro, dialogs, isLearned, isFavorite] = await Promise.all([
+      introService.getIntroById(exercise.introId.toString()), // 获取intro
+      Promise.all(exercise.dialogIds.map(dialogId => 
+        dialogService.getDialogById(dialogId.toString(), userId)
+      )), // 获取dialogs
       exeLearnService.checkLearningStatusByExeId(userId, exerciseId), // 已学/未学，返回boolean
       exeFavService.checkFavStatusByExeId(userId, exerciseId) // 是否收藏，返回boolean
     ]);
-
-    if (!exercise) {
-      throw new Error('Exercise not found');
-    }
 
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {
@@ -110,7 +111,7 @@ class ExerciseService {
           isVIPOnly: exercise.isVIPOnly,
           isUserVIP: isUserVIP,
           isLearned: isLearned.isLearned,
-          isFavorite: isFavorite.isFavorite
+          isFavorite: isFavorite
         }
       }
     }
@@ -126,7 +127,7 @@ class ExerciseService {
         isVIPOnly: exercise.isVIPOnly,
         isUserVIP: isUserVIP,
         isLearned: isLearned.isLearned,
-        isFavorite: isFavorite.isFavorite,
+        isFavorite: isFavorite,
         intro: intro,
         dialogs: dialogs
       }
@@ -136,7 +137,7 @@ class ExerciseService {
   /**
    * 更新练习 - 仅管理员使用，不做返回格式处理
    * @param {string} exerciseId - 练习ID
-   * @param {any} exercise - 练习对象，只可修改7信息(seq, title, introId, dialogIds, category, source, isVIPOnly)
+   * @param {any} exercise - 只可修改7信息(seq, title, introId, dialogIds, category, source, isVIPOnly)
    * @returns {Promise<any>} 返回更新后的练习对象
    */
   async updateExercise(exerciseId: string, exercise: any): Promise<{updatedExercise: IExercise}> {
@@ -186,7 +187,8 @@ class ExerciseService {
    * @returns {Promise<any>} 返回收藏状态
    */
   async getFavoriteStatus(userId: string, exerciseId: string): Promise<{isFavorite: boolean}> {
-    return await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+    const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+    return { isFavorite };
   }
 
   /**

@@ -26,8 +26,6 @@ const AudioContentSchema = new Schema({
 
 export interface IAudio extends Document {
   _id: mongoose.Types.ObjectId;
-  dialogId: mongoose.Types.ObjectId;
-  exerciseId: mongoose.Types.ObjectId;
   sequence: 1 | 2;
   englishContent: AudioContent;
   contents: Map<LanguageCode, AudioContent>;
@@ -37,17 +35,6 @@ export interface IAudio extends Document {
 }
 
 const AudioSchema = new Schema({
-  dialogId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Dialog',
-    required: true,
-    index: true
-  },
-  exerciseId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Exercise',
-    required: true
-  },
   sequence: {
     type: Number,
     required: true,
@@ -65,7 +52,5 @@ const AudioSchema = new Schema({
   timestamps: true
 });
 
-// 确保每个dialog的每个sequence只有一个音频记录
-AudioSchema.index({ dialogId: 1, sequence: 1 }, { unique: true });
 
 export default mongoose.model<IAudio>('Audio', AudioSchema); 
