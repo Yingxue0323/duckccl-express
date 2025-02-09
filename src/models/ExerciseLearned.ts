@@ -17,7 +17,7 @@ const ExerciseLearnedSchema = new Schema({
   },
   exerciseId: {
     type: Schema.Types.ObjectId,
-    ref: 'Exercise',
+    ref: 'ExerciseNew',
     required: true,
     unique: true
   }

@@ -11,7 +11,6 @@ class AuthController {
 
       logger.info(`登录成功: 用户id: ${user._id}\n token: ${token}`);
       return res.json({ user, token });
-
     } catch (error: any) {
       logger.error(`登录失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ 

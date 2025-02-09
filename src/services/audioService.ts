@@ -86,29 +86,6 @@ class AudioService {
     if(!audio) throw new Error('Audio not found');
     return true;
   }
-
-  /**
-   * 获取收藏状态
-   * @param {string} userId - 用户ID
-   * @param {string} audioId - 音频ID
-   * @returns {Promise<any>} 返回收藏状态
-   */
-  async getFavoriteStatus(userId: string, audioId: string): Promise<{isFavorite: boolean}> {
-    const isFavorite = await exeFavService.checkFavStatusByAudioId(userId, audioId);
-    return { isFavorite: isFavorite };
-  }
-
-  /**
-   * 更新收藏状态
-   * @param {string} userId - 用户ID
-   * @param {string} audioId - 音频ID
-   * @param {boolean} isFavorite - 收藏状态
-   * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
-   */
-  async updateFavoriteStatus(userId: string, audioId: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
-    const newStatus = await exeFavService.updateFavoriteStatus(userId, audioId, 'Audio', isFavorite);
-    return { isFavorite: newStatus.isFavorite };
-  }
 }
 
 export const audioService = new AudioService(); 

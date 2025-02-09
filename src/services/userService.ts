@@ -23,17 +23,19 @@ class UserService {
   }
 
   // 获取用户信息
-  async getUserById(userId: string): Promise<IUser | null> {
+  async getUserById(userId: string): Promise<IUser> {
     const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
     return user;
   }
-  async getUserByOpenid(openid: string): Promise<IUser | null> {
+  async getUserByOpenid(openid: string): Promise<IUser> {
     const user = await User.findOne({ openId:openid });
+    if (!user) throw new Error('User not found');
     return user;
   }
 
   // 更新用户信息（头像、昵称修改，暂不正式开放）
-  async updateUserInfo(userId: string, newInfo: any): Promise<IUser> {
+  async updateUser(userId: string, newInfo: any): Promise<IUser> {
     const user = await User.findByIdAndUpdate(
       userId,
       { $set: newInfo },
@@ -75,7 +77,22 @@ class UserService {
     return { success: true };
   }
 
-  // 获取用户偏好语言
+  /**
+   * 删除用户
+   * @param {string} userId - 用户ID
+   * @returns {Promise<boolean>} 返回成功与否的boolean
+   */
+  async deleteUser(userId: string) {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) throw new Error('User not found');
+    return true;
+  }
+
+ /**
+  * 获取用户偏好语言
+  * @param {string} userId - 用户ID
+  * @returns {Promise<LanguageCode>} 返回用户偏好语言
+  */
   async getUserLang(userId: string): Promise<LanguageCode> {
     const user = await User.findById(userId);
     return user?.lang || LANGUAGES.CHINESE_SIMPLIFIED;

@@ -1,17 +1,63 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { CATEGORIES, Category,
          EXERCISE_SOURCES, ExerciseSource } from '../utils/constants';
-import Dialog from './Dialog';
 
+interface Audio {
+  order: number;
+  text: string;
+  url: string;
+  trans?: string;
+  trans_url?: string;
+  duration: number
+}
+
+const AudioSchema = new Schema({
+  order: {
+    type: Number,
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  url: {
+    type: String,
+    required: true
+  },
+  trans: {
+    type: String
+  },
+  trans_url: {
+    type: String
+  },
+  duration: {
+    type: Number,
+    required: true,
+    min: 0
+  }
+});
+
+
+const DialogSchema = new Schema({
+  order: {
+    type: Number,
+    required: true
+  },
+  audios: {
+    type: [AudioSchema],
+    required: true
+  }
+}, { _id: false });
+  
 export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;
-  seq: number;
+  seq: string;
   title: string;
-  introId: mongoose.Types.ObjectId;
-  dialogIds: mongoose.Types.ObjectId[];
   category: Category;
   source: ExerciseSource;
   isVIPOnly: boolean;
+  intro: Audio;
+  dialogs: Audio[];
   
   createdAt: Date;
   updatedAt: Date;
@@ -19,7 +65,7 @@ export interface IExercise extends Document {
 
 const ExerciseSchema = new Schema({
   seq: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
     index: true
@@ -28,16 +74,6 @@ const ExerciseSchema = new Schema({
     type: String, 
     required: true 
   },
-  introId: { 
-    type: Schema.Types.ObjectId,
-    ref: 'Intro',
-    required: true 
-  },
-  dialogIds: [{ 
-    type: Schema.Types.ObjectId,
-    ref: 'Dialog',
-    required: true 
-  }],
   category: { 
     type: String, 
     enum: Object.values(CATEGORIES),
@@ -53,27 +89,15 @@ const ExerciseSchema = new Schema({
     type: Boolean, 
     default: false,
     required: true
+  },
+  intro: { 
+    type: AudioSchema,
+  },
+  dialogs: { 
+    type: [AudioSchema],
   }
 }, {
   timestamps: true 
-});
-
-ExerciseSchema.pre('deleteOne', { document: true }, async function() {
-  // 删除所有关联的对话
-  await Dialog.updateMany(
-    { exerciseId: this._id },
-    { $unset: { exerciseId: 1 } }
-  );
-});
-
-ExerciseSchema.pre('findOneAndDelete', async function() {
-  const doc = await this.model.findOne(this.getQuery());
-  if (doc) {
-    await Dialog.updateMany(
-      { exerciseId: doc._id },
-      { $unset: { exerciseId: 1 } }
-    );
-  }
 });
 
 export default mongoose.model<IExercise>('Exercise', ExerciseSchema);

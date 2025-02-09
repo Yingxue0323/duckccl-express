@@ -2,23 +2,35 @@ import Exercise, { IExercise } from '../models/Exercise';
 import { exeLearnService } from './exeLearnService';
 import { exeFavService } from './exeFavService';
 import { userService } from './userService';
-import { introService } from './introService';
-import { dialogService } from './dialogService';
-import { Category, ExerciseSource } from '../utils/constants';
-import mongoose from 'mongoose';
-import Dialog from '../models/Dialog';
+import { Category, ExerciseSource} from '../utils/constants';
+import { getSignedUrl } from '../utils/s3';
 
 class ExerciseService {
 
   /**
    * 创建新的练习 - 仅管理员使用，不做返回格式处理
-   * @param {any} exercise - 练习对象，包含练习的所有必要7信息(seq, title, introId, dialogIds, category, source, isVIPOnly)
+   * @param {any} data - 练习对象，包含练习的fulltitle, source, isVIPOnly, intro, dialogs
    * @returns {Promise<any>} 返回创建后的练习对象
    */
-  async createExercise(exercise: any): Promise<{exercise: IExercise}> {
-    const newExercise = await Exercise.create(exercise);
-    return { exercise: newExercise as IExercise }
+  async createExercise(data: any): Promise<any> {
+    return await Exercise.create({data});
   }
+
+  // async parseExerciseTitle(fullTitle: string) {
+  //   const match = fullTitle.match(/^(\w+)\s+[A-Z](\d+)\.(.+)$/);
+  //   if (!match) {
+  //     throw new Error(
+  //       '标题格式不正确。应为：类别 字母数字.标题' +
+  //       '例如：Business B001.Seafood Export'
+  //     );
+  //   }
+
+  //   return {
+  //     category: match[1],           // "Business"
+  //     seq: match[2],               // "001"
+  //     title: match[3].trim()       // "Seafood Export"
+  //   };
+  // }
 
   /**
    * 获取所有练习
@@ -26,26 +38,29 @@ class ExerciseService {
    * @returns {Promise<any>} 返回练习总数、已学数量、收藏数量和题目简要信息列表
    */
   async getAllExercises(userId: string): Promise<{exerciseCount: number, learnedCount: number, 
-    favoriteCount: number, isUserVIP: boolean, exercises: { _id: string; seq: number; title: string; isVIPOnly: boolean; 
+    favoriteCount: number, isUserVIP: boolean, exercises: { _id: string; seq: string; title: string; isVIPOnly: boolean; 
       category: Category; source: ExerciseSource; isLearned: boolean; isFavorite: boolean; }[]}> {
     if (!userId) {
       throw new Error('User is required');
     }
     
     // 并行异步
-    const [exercises, learned, favorites, isUserVIP] = await Promise.all([
-      Exercise.find().sort({ seq: 1 }),
-      exeLearnService.getLearnedExercisesList(userId), // 已学/未学，返回已学的exerciseId列表
-      exeFavService.getFavoriteExercisesList(userId), // 是否收藏，返回收藏的exerciseId列表
+    const [exercises, learnedList, favoritesList, isUserVIP] = await Promise.all([
+      Exercise.find()
+        .sort({ seq: 1 })
+        .select('_id seq title category source isVIPOnly')
+        .lean(),
+      exeLearnService.getAllLearnedExercises(userId), // 返回已学的exerciseId列表
+      exeFavService.getAllFavoriteExercises(userId), // 返回收藏的exerciseId列表
       userService.checkVIPStatus(userId) // 用户是否为VIP
     ]);
 
     // 转换为Map，方便查询
     const learnedMap = new Map(
-      learned.map(itemId => [itemId, true])
+      learnedList.ids.map((itemId: string) => [itemId, true])
     );
     const favoriteMap = new Map(
-      favorites.map(itemId => [itemId, true])
+      favoritesList.ids.map((itemId: string) => [itemId, true]) // 使用 favorites.ids
     );
 
     const exerciseList = exercises.map((exercise: IExercise) => {
@@ -65,8 +80,8 @@ class ExerciseService {
     // 返回带统计值的
     return {
       exerciseCount: exercises.length,
-      learnedCount: learned.length,
-      favoriteCount: favorites.length,
+      learnedCount: learnedList.count,
+      favoriteCount: favoritesList.count,
       isUserVIP: isUserVIP,
       exercises: exerciseList,
     };
@@ -79,7 +94,7 @@ class ExerciseService {
    * @returns {Promise<any>} 返回练习详情
    */
   async getExerciseById(exerciseId: string, userId: string): Promise<{message: string, data: {
-    _id: string; seq: number; title: string; category: Category; source: ExerciseSource; isVIPOnly: boolean; 
+    _id: string; seq: string; title: string; category: Category; source: ExerciseSource; isVIPOnly: boolean; 
     isUserVIP: boolean; isLearned: boolean; isFavorite: boolean; intro?: any; dialogs?: any; }}> {
     if (!exerciseId || !userId) {
       throw new Error('Exercise ID and User ID are required');
@@ -89,12 +104,14 @@ class ExerciseService {
     const exercise = await Exercise.findById(exerciseId);
     if (!exercise) throw new Error('Exercise not found');
 
-    const [intro, dialogs, isLearned, isFavorite] = await Promise.all([
-      introService.getIntroById(exercise.introId.toString()), // 获取intro
-      Promise.all(exercise.dialogIds.map(dialogId => 
-        dialogService.getDialogById(dialogId.toString(), userId)
-      )), // 获取dialogs
-      exeLearnService.checkLearningStatusByExeId(userId, exerciseId), // 已学/未学，返回boolean
+    const [signedIntro, signedDialogs, isLearned, isFavorite] = await Promise.all([
+      { ...exercise.intro, url: await getSignedUrl(exercise.intro.url) }, // 获取预签名后的intro
+      Promise.all(exercise.dialogs.map(async dialog => ({
+        ...dialog,
+        url: await getSignedUrl(dialog.url),
+        trans_url: dialog.trans_url ? await getSignedUrl(dialog.trans_url) : undefined
+      }))), // 获取预签名后的dialogs
+      exeLearnService.checkStatus(userId, exerciseId), // 已学/未学，返回boolean
       exeFavService.checkFavStatusByExeId(userId, exerciseId) // 是否收藏，返回boolean
     ]);
 
@@ -110,7 +127,7 @@ class ExerciseService {
           source: exercise.source,
           isVIPOnly: exercise.isVIPOnly,
           isUserVIP: isUserVIP,
-          isLearned: isLearned.isLearned,
+          isLearned: isLearned,
           isFavorite: isFavorite
         }
       }
@@ -126,10 +143,10 @@ class ExerciseService {
         source: exercise.source,
         isVIPOnly: exercise.isVIPOnly,
         isUserVIP: isUserVIP,
-        isLearned: isLearned.isLearned,
+        isLearned: isLearned,
         isFavorite: isFavorite,
-        intro: intro,
-        dialogs: dialogs
+        intro: signedIntro,
+        dialogs: signedDialogs
       }
     };
   }
@@ -137,69 +154,24 @@ class ExerciseService {
   /**
    * 更新练习 - 仅管理员使用，不做返回格式处理
    * @param {string} exerciseId - 练习ID
-   * @param {any} exercise - 只可修改7信息(seq, title, introId, dialogIds, category, source, isVIPOnly)
+   * @param {any} exercise - seq, title, intro, dialogs, category, source, isVIPOnly
    * @returns {Promise<any>} 返回更新后的练习对象
    */
-  async updateExercise(exerciseId: string, exercise: any): Promise<{updatedExercise: IExercise}> {
-    const updatedExercise = await Exercise.findByIdAndUpdate(
-      exerciseId, 
-      exercise, 
-      { new: true }
-    );
-    return { updatedExercise: updatedExercise as IExercise }
+  async updateExercise(exerciseId: string, data: any): Promise<{updatedExercise: IExercise}> {
+    const updatedExercise = await Exercise.findByIdAndUpdate(exerciseId, data);
+    if (!updatedExercise) throw new Error('Exercise not found');
+    return { updatedExercise }
   }
 
   /**
    * 删除练习 - 仅管理员使用，不做返回格式处理
    * @param {string} exerciseId - 练习ID
-   * @returns {Promise<any>} 返回删除后的练习ID
+   * @returns {Promise<any>} 返回删除成功与否的boolean
    */
-  async deleteExercise(exerciseId: string): Promise<{exerciseId: string}> {
-    await Exercise.findByIdAndDelete(exerciseId);
-    return { exerciseId: exerciseId }
-  }
-
-  /**
-   * 获取学习状态
-   * @param {string} userId - 用户ID
-   * @param {string} exerciseId - 练习ID
-   * @returns {Promise<any>} 返回学习状态
-   */
-  async getLearningStatus(userId: string, exerciseId: string): Promise<{isLearned: boolean}> {
-    return await exeLearnService.checkLearningStatusByExeId(userId, exerciseId);
-  }
-
-  /**
-   * 更新学习状态
-   * @param {string} userId - 用户ID
-   * @param {string} exerciseId - 练习ID
-   * @param {boolean} isLearned - 学习状态
-   * @returns {Promise<any>} 返回更新后的学习状态
-   */
-  async updateLearningStatus(userId: string, exerciseId: string, isLearned: boolean): Promise<{isLearned: boolean}> {
-    return await exeLearnService.updateLearningStatus(userId, exerciseId, isLearned);
-  }
-
-  /**
-   * 获取收藏状态
-   * @param {string} userId - 用户ID
-   * @param {string} exerciseId - 练习ID
-   * @returns {Promise<any>} 返回收藏状态
-   */
-  async getFavoriteStatus(userId: string, exerciseId: string): Promise<{isFavorite: boolean}> {
-    const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
-    return { isFavorite };
-  }
-
-  /**
-   * 更新收藏状态
-   * @param {string} userId - 用户ID
-   * @param {string} exerciseId - 练习ID
-   * @param {boolean} isFavorite - 收藏状态
-   * @returns {Promise<any>} 返回更新后的收藏状态
-   */
-  async updateFavoriteStatus(userId: string, exerciseId: string, itemType: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
-    return await exeFavService.updateFavoriteStatus(userId, exerciseId, itemType, isFavorite);
+  async deleteExercise(exerciseId: string): Promise<boolean> {
+    const deletedExercise = await Exercise.findByIdAndDelete(exerciseId);
+    if (!deletedExercise) throw new Error('Exercise not found');
+    return true;
   }
 }
 

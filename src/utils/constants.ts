@@ -22,21 +22,21 @@ export const LANGUAGES = {
 export type LanguageCode = typeof LANGUAGES[keyof typeof LANGUAGES];
 
 
-// 单词/练习分类
+// 单词/练习分类(共13类，单词占7类，练习没有others类，12类)
 export const CATEGORIES = {
   BUSINESS: 'BUSINESS', 
-  EDUCATION: 'EDUCATION',
   COMMUNITY: 'COMMUNITY',
-  CONSUMER_AFFAIRS: 'CONSUMER_AFFAIRS',
+  EDUCATION: 'EDUCATION', //单词
   EMPLOYMENT: 'EMPLOYMENT',
+  FINANCIAL: 'FINANCIAL',
   HOUSING: 'HOUSING',
-  IMMIGRATION: 'IMMIGRATION',
+  IMMIGRATION: 'IMMIGRATION', //单词
   INSURANCE: 'INSURANCE',
-  LEGAL: 'LEGAL',
-  TRAVEL: 'TRAVEL',
-  ENTERTAINMENT: 'ENTERTAINMENT',
-  HEALTH: 'HEALTH',
-  TECHNOLOGY: 'TECHNOLOGY'
+  LEGAL: 'LEGAL', //单词
+  MEDICAL: 'MEDICAL', //单词
+  SOCIAL_WELFARE: 'SOCIAL_WELFARE', //单词
+  TOURISM: 'TOURISM', //单词
+  OTHERS: 'OTHERS' //单词
 } as const;
 
 export type Category = typeof CATEGORIES[keyof typeof CATEGORIES];
@@ -50,13 +50,13 @@ export const EXERCISE_SOURCES = {
 export type ExerciseSource = typeof EXERCISE_SOURCES[keyof typeof EXERCISE_SOURCES];
 
 // 单词学习状态：未学习/学习中/已掌握
-export const WORD_STATUS = {
+export const LEARNED_STATUS = {
   UNLEARNED: 'UNLEARNED',
   LEARNING: 'LEARNING',
-  MASTERED: 'MASTERED'
+  LEARNED: 'LEARNED'
 } as const;
 
-export type WordStatus = typeof WORD_STATUS[keyof typeof WORD_STATUS];
+export type LearnedStatus = typeof LEARNED_STATUS[keyof typeof LEARNED_STATUS];
 
 
 // 静态内容类型

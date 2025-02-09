@@ -1,9 +1,18 @@
-import { Request, Response } from 'express';
+import { Request } from '../types/express';
+import { Response } from 'express';
 import { exerciseService } from '../services/exerciseService';
+import { exeFavService } from '../services/exeFavService';
+import { exeLearnService } from '../services/exeLearnService';
 import logger from '../utils/logger';
 
 class ExerciseController {
-  // 创建练习
+//-----------------------------------------------基础CURD-----------------------------------------------
+  /**
+   * 创建练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回创建后的exercise对象
+   */
   async createExercise(req: Request, res: Response) {
     try { 
       const exercise = req.body;
@@ -17,7 +26,12 @@ class ExerciseController {
     }
   }
 
-  // 获取所有练习
+  /**
+   * 获取所有练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回练习列表
+   */
   async getAllExercises(req: Request, res: Response) {
     try {
       const result = await exerciseService.getAllExercises(req.user._id.toString());
@@ -31,7 +45,12 @@ class ExerciseController {
     }
   }
 
-  // 获取单个练习详情
+  /**
+   * 获取单个练习详情
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回练习详情
+   */
   async getExerciseById(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
@@ -47,7 +66,12 @@ class ExerciseController {
     }
   }
 
-  // 更新练习
+  /**
+   * 更新练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的exercise对象
+   */
   async updateExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
@@ -62,13 +86,18 @@ class ExerciseController {
     }
   }
 
-  // 删除练习
+  /**
+   * 删除练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回成功与否的boolean
+   */
   async deleteExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const result = await exerciseService.deleteExercise(exerciseId);
 
-      logger.info(`删除练习成功: ${result.exerciseId}`);
+      logger.info(`删除练习成功: ${exerciseId}`);
       return res.json(result);
     } catch (error: any) {
       logger.error(`删除练习失败: ${JSON.stringify({ error: error.message })}`);
@@ -76,14 +105,20 @@ class ExerciseController {
     }
   }
 
-  // 获取学习状态
+//-----------------------------------------------学习状态-----------------------------------------------
+  /**
+   * 获取学习状态
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回已学/未学的boolean
+   */
   async getLearningStatus(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const result = await exerciseService.getLearningStatus(userId, exerciseId);
+      const result = await exeLearnService.checkStatus(userId, exerciseId);
   
-      logger.info(`获取学习状态成功: ${result.isLearned}`);
+      logger.info(`获取学习状态成功: ${result}`);
       return res.json(result);
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
@@ -91,27 +126,17 @@ class ExerciseController {
     }
   }
 
-  // 获取收藏状态
-  async getFavoriteStatus(req: Request, res: Response) {
-    try {
-      const exerciseId = req.params.id;
-      const userId = req.user._id.toString();
-      const result = await exerciseService.getFavoriteStatus(userId, exerciseId);
-  
-      logger.info(`获取收藏状态成功: ${result.isFavorite}`);
-      return res.json(result);
-    } catch (error: any) {
-      logger.error(`获取收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
-    }
-  } 
-
-  // 标为已学
+  /**
+   * 标为已学
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isLearned: boolean}
+   */
   async learnExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const status = await exerciseService.updateLearningStatus(userId, exerciseId, true);
+      const status = await exeLearnService.createStatus(userId, exerciseId);
 
       logger.info(`更新学习状态成功: ${status.isLearned}`);
       return res.json(status);
@@ -121,12 +146,17 @@ class ExerciseController {
     }
   }
 
-  // 标为未学
+  /**
+   * 标为未学
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isLearned: boolean}
+   */
   async unlearnExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const status = await exerciseService.updateLearningStatus(userId, exerciseId, false);
+      const status = await exeLearnService.deleteStatus(userId, exerciseId);
 
       logger.info(`更新学习状态成功: ${status.isLearned}`);
       return res.json(status);
@@ -136,32 +166,124 @@ class ExerciseController {
     }
   }
 
-  // 收藏练习
+//-----------------------------------------------收藏状态-----------------------------------------------
+  /**
+   * 获取练习题收藏状态
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回收藏状态的boolean
+   */
+  async getFavoriteExerciseStatus(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.exerciseId;
+      const userId = req.user._id.toString();
+      const result = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+  
+      logger.info(`获取练习题收藏状态成功: {${exerciseId}: ${result}}`);
+      return res.json(result);
+    } catch (error: any) {
+      logger.error(`获取练习题收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  } 
+
+  /**
+   * 获取单段音频收藏状态
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回收藏状态的boolean
+   */
+  async getFavoriteAudioStatus(req: Request, res: Response) {
+    try {
+      const audioId = req.params.audioId;
+      const userId = req.user._id.toString();
+      const result = await exeFavService.checkFavStatusByAudioId(userId, audioId);
+  
+      logger.info(`获取音频收藏状态成功: {${audioId}: ${result}}`);
+      return res.json(result);
+    } catch (error: any) {
+      logger.error(`获取音频收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  } 
+
+  /**
+   * 收藏练习题
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isFavorite: boolean}
+   */
   async favoriteExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const status = await exerciseService.updateFavoriteStatus(userId, exerciseId, 'Exercise', true);
+      const status = await exeFavService.updateItemFavorites(userId, exerciseId, 'Exercise', true);
 
-      logger.info(`更新收藏状态成功: ${status.isFavorite}`);
+      logger.info(`收藏练习成功: {${exerciseId}: ${status.isFavorite}}`);
       return res.json(status);
     } catch (error: any) {
-      logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      logger.error(`收藏练习失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+  /**
+   * 收藏单段语音
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isFavorite: boolean}
+   */
+  async favoriteAudio(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.exerciseId;
+      const audioId = req.params.audioId;
+      const userId = req.user._id.toString();
+      const status = await exeFavService.updateItemFavorites(userId, audioId, 'Audio', true);
+
+      logger.info(`收藏单段音频成功: {${audioId}: ${status.isFavorite}}`);
+      return res.json(status);
+    } catch (error: any) {
+      logger.error(`收藏单段音频失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }
 
-  // 取消收藏练习
+  /**
+   * 取消收藏练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isFavorite: boolean}
+   */
   async unfavoriteExercise(req: Request, res: Response) {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const status = await exerciseService.updateFavoriteStatus(userId, exerciseId, 'Exercise', false);
+      const status = await exeFavService.updateItemFavorites(userId, exerciseId, 'Exercise', false);
   
-      logger.info(`更新收藏状态成功: ${status.isFavorite}`);
+      logger.info(`取消练习收藏状态成功: {${exerciseId}: ${status.isFavorite}}`);
       return res.json(status);
     } catch (error: any) {
-      logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      logger.error(`取消练习收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  /**
+   * 取消收藏单段音频
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回更新后的{isFavorite: boolean}
+   */
+  async unfavoriteAudio(req: Request, res: Response) {
+    try {
+      const exerciseId = req.params.exerciseId;
+      const audioId = req.params.audioId;
+      const userId = req.user._id.toString();
+      const status = await exeFavService.updateItemFavorites(userId, audioId, 'Audio', false);
+  
+      logger.info(`取消语音收藏状态成功: {${audioId}: ${status.isFavorite}}`);
+      return res.json(status);
+    } catch (error: any) {
+      logger.error(`取消语音收藏状态失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ message: error.message });
     }
   }

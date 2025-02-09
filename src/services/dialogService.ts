@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import Dialog, { IDialog } from '../models/Dialog';
+import Exercise from '../models/Exercise';
 import { audioService } from './audioService';
 
 class DialogService {
@@ -63,8 +65,15 @@ class DialogService {
    * @returns 是否删除成功
    */
   async deleteDialog(dialogId: string): Promise<boolean> {
-    const dialog = await Dialog.findByIdAndDelete(dialogId);
+    const dialog = await Dialog.findById(dialogId);
     if(!dialog) throw new Error('Dialog not found');
+
+    // 1. 删除相关的audios
+    await Promise.all(dialog.audioIds.map(audioId => 
+      audioService.deleteAudio(audioId.toString())
+    ));
+    // 2. 删除dialog
+    await Dialog.findByIdAndDelete(dialogId);
     return true;
   }
 }

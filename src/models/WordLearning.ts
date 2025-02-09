@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { WORD_STATUS, WordStatus } from '../utils/constants';
+import { LEARNED_STATUS, LearnedStatus } from '../utils/constants';
 
 export interface IWordLearning extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   wordId: mongoose.Types.ObjectId;
   correctCount: number;
-  status: WordStatus;
+  status: LearnedStatus;
 
   createdAt: Date;
   updatedAt: Date;
@@ -31,8 +31,8 @@ const WordLearningSchema = new Schema({
   },
   status: {
     type: String,
-    enum: Object.values(WORD_STATUS),
-    default: WORD_STATUS.UNLEARNED,
+    enum: Object.values(LEARNED_STATUS),
+    default: LEARNED_STATUS.UNLEARNED,
     required: true
   }
 }, {
