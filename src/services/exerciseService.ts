@@ -4,6 +4,7 @@ import { exeFavService } from './exeFavService';
 import { userService } from './userService';
 import { Category, ExerciseSource} from '../utils/constants';
 import { getSignedUrl } from '../utils/s3';
+import logger from '../utils/logger';
 
 class ExerciseService {
 
@@ -104,16 +105,27 @@ class ExerciseService {
     const exercise = await Exercise.findById(exerciseId);
     if (!exercise) throw new Error('Exercise not found');
 
-    const [signedIntro, signedDialogs, isLearned, isFavorite] = await Promise.all([
-      { ...exercise.intro, url: await getSignedUrl(exercise.intro.url) }, // 获取预签名后的intro
-      Promise.all(exercise.dialogs.map(async dialog => ({
+    try { 
+      logger.info(`进入预签名阶段`);
+      const [signedIntro, signedDialogs, isLearned, isFavorite] = await Promise.all([
+        { ...exercise.intro, url: await getSignedUrl(exercise.intro.url) }, // 获取预签名后的intro
+        Promise.all(exercise.dialogs.map(async dialog => ({
         ...dialog,
         url: await getSignedUrl(dialog.url),
         trans_url: dialog.trans_url ? await getSignedUrl(dialog.trans_url) : undefined
-      }))), // 获取预签名后的dialogs
+      }))),
       exeLearnService.checkStatus(userId, exerciseId), // 已学/未学，返回boolean
       exeFavService.checkFavStatusByExeId(userId, exerciseId) // 是否收藏，返回boolean
     ]);
+    } catch (error) {
+      logger.error(`预签名失败: ${error}`);
+      throw new Error('预签名失败');
+    }
+
+    const isLearned = false;
+    const isFavorite = false;
+    const signedIntro = '';
+    const signedDialogs = [''];
 
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {

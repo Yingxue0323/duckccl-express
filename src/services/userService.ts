@@ -1,10 +1,12 @@
 import User, { IUser } from '../models/User';
 import { LanguageCode, LANGUAGES, LOGIN_TYPE } from '../utils/constants';
 import { generateToken } from '../utils/jwt';
+import logger from '../utils/logger';
 
 class UserService {
   // 创建用户
   async createUser(openid: string, session_key: string): Promise<{ user: IUser, token: string }> {
+    logger.info(`创建用户: ${openid}`);
     const user = await User.create({
       openId: openid,
       sessionKey: session_key,
