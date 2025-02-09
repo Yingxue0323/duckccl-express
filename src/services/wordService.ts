@@ -34,7 +34,7 @@ class WordService {
     const audio = await getSignedUrl(word.audioUrl);
 
     const isFavorite = await wordFavService.checkFavStatusByWordId(userId, wordId);
-    const learningStatus = await wordLearnService.checkLearningStatusByWordId(userId, wordId);
+    const learningStatus = await wordLearnService.checkStatus(userId, wordId);
 
     return {
       wordId: word._id.toString(),
