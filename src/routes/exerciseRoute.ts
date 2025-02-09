@@ -18,15 +18,9 @@ router.get('/:id/learning', authMiddleware, exerciseController.getLearningStatus
 router.post('/:id/learning', authMiddleware, exerciseController.learnExercise); // 标为已学
 router.delete('/:id/learning', authMiddleware, exerciseController.unlearnExercise); // 标为未学
 
-// 收藏功能，练习题+单段音频
-// 练习题收藏
-router.get('/:exerciseId/favorites', authMiddleware, exerciseController.getFavoriteExerciseStatus); // 获取收藏状态
-router.post('/:exerciseId/favorites', authMiddleware, exerciseController.favoriteExercise); // 收藏练习
-router.delete('/:exerciseId/favorites', authMiddleware, exerciseController.unfavoriteExercise); // 取消收藏练习
-
-// 单段音频收藏
-router.get('/:exerciseId/:dialogId/:audioId/favorites', authMiddleware, exerciseController.getFavoriteAudioStatus); // 获取收藏状态
-router.post('/:exerciseId/:dialogId/:audioId/favorites', authMiddleware, exerciseController.favoriteAudio); // 收藏音频
-router.delete('/:exerciseId/:dialogId/:audioId/favorites', authMiddleware, exerciseController.unfavoriteAudio); // 取消收藏音频
+// 收藏功能
+router.get('/:id/favorites', authMiddleware, exerciseController.getFavoriteExerciseStatus); // 获取收藏状态
+router.post('/:id/favorites', authMiddleware, exerciseController.favoriteExercise); // 收藏练习
+router.delete('/:id/favorites', authMiddleware, exerciseController.unfavoriteExercise); // 取消收藏练习
 
 export default router; 

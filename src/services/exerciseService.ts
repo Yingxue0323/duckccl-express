@@ -91,21 +91,6 @@ class ExerciseService {
     const isLearned = await exeLearnService.checkStatus(userId, exerciseId);
     const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
 
-    // 转换 intro 的 URL
-    const introWithUrl = {
-      ...exercise.intro,
-      url: `/api/v1/exercises/audios?key=${encodeURIComponent(exercise.intro.url)}`
-    };
-
-    // 转换 dialogs 中的 URL
-    const dialogsWithUrl = exercise.dialogs.map(dialog => ({
-      ...dialog,
-      url: `/api/v1/exercises/audios?key=${encodeURIComponent(dialog.url)}`,
-      trans_url: dialog.trans_url 
-        ? `/api/v1/exercises/audios?key=${encodeURIComponent(dialog.trans_url)}`
-        : undefined
-    }));
-
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {
       return {
@@ -131,8 +116,8 @@ class ExerciseService {
         isUserVIP: isUserVIP,
         isLearned: isLearned,
         isFavorite: isFavorite,
-        intro: introWithUrl,
-        dialogs: dialogsWithUrl
+        intro: exercise.intro,
+        dialogs: exercise.dialogs
       }
     };
   }
@@ -180,11 +165,11 @@ class ExerciseService {
       
       response.data.pipe(res);
 
-      logger.info(`流式传输音频: ${url}`);
+      logger.info(`流式传输音频成功: ${url}`);
       return response.data.pipe(res);
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`流式传输音频失败: ${error}`);
-      throw new Error(`音频流式传输失败: ${error}`);
+      throw new Error(`音频流式传输失败: ${JSON.stringify({ error: error.message })}`);
     }
   }
 }

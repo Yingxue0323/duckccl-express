@@ -14,10 +14,16 @@ class UserController {
       const users = await userService.getAllUsers();
 
       logger.info(`获取所有用户成功: ${users.length}`);
-      return res.json({ count: users.length, users});
+      return res.json({ 
+        message: '获取所有用户成功',
+        count: users.length, 
+        users
+      });
     } catch (error: any) {
       logger.error(`获取用户失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_ALL_USERS_FAILED',
+        message: error.message });
     }
   }
 
@@ -33,11 +39,16 @@ class UserController {
       const user = await userService.getUserById(id);
 
       logger.info(`获取用户信息成功: ${user._id}`);
-      return res.json(user);
+      return res.json({ 
+        message: '获取用户信息成功',
+        user
+      });
 
     } catch (error: any) {
       logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_USER_BY_ID_FAILED',
+        message: error.message });
     }
   }
 
@@ -53,10 +64,15 @@ class UserController {
       const user = await userService.getUserByOpenid(openid);
 
       logger.info(`获取用户信息成功: ${user._id}`);
-      return res.json(user);
+      return res.json({ 
+        message: '获取用户信息成功',
+        user
+      });
     } catch (error: any) {
       logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_USER_BY_OPENID_FAILED',
+        message: error.message });
     }
   }
 
@@ -73,10 +89,15 @@ class UserController {
       const user = await userService.updateUser(id, newInfo);
 
       logger.info(`更新用户信息成功: ${id}`);
-      return res.json(user);
+      return res.json({ 
+        message: '更新用户信息成功',
+        user
+      });
     } catch (error: any) {
       logger.error(`更新用户信息失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'UPDATE_USER_FAILED',
+        message: error.message });
     }
   }
 
@@ -92,10 +113,15 @@ class UserController {
       const result = await userService.deleteUser(id);
 
       logger.info(`删除用户成功: ${id}`); 
-      return res.json(result);
+      return res.json({ 
+        message: '删除用户成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`删除用户失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'DELETE_USER_FAILED',
+        message: error.message });
     }
   }
 } 

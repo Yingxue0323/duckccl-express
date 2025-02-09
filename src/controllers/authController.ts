@@ -10,7 +10,11 @@ class AuthController {
       const { user, token } = await authService.wechatLogin(code);
 
       logger.info(`登录成功: 用户id: ${user._id}\n token: ${token}`);
-      return res.json({ user, token });
+      return res.json({ 
+        message: '登录成功',
+        user, 
+        token 
+      });
     } catch (error: any) {
       logger.error(`登录失败: ${JSON.stringify({ error: error.message })}`);
       return res.status(500).json({ 
@@ -27,7 +31,10 @@ class AuthController {
       const { token } = await authService.refreshToken(code);
 
       logger.info(`刷新token成功: ${token}`);
-      return res.json({ token });
+      return res.json({ 
+        message: '刷新token成功',
+        token 
+      });
       
     } catch (error: any) {
       logger.error(`刷新token失败: ${JSON.stringify({ error: error.message })}`);
@@ -44,7 +51,10 @@ class AuthController {
       const result = await authService.wechatLogout(req.user._id.toString());
     
       logger.info(`登出成功: 用户id: ${req.user._id}`);
-      return res.json({ success: result.success });
+      return res.json({ 
+        message: '登出成功',
+        success: result.success 
+      });
 
     } catch (error: any) {
 

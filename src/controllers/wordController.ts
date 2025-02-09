@@ -18,10 +18,15 @@ class WordController {
       const result = await wordService.createWord(word);
 
       logger.info(`创建单词成功: ${result._id}`);
-      return res.json(result);
+      return res.json({ 
+        message: '创建单词成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`创建单词失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'CREATE_WORD_FAILED',
+        message: error.message });
     }
   }
 
@@ -36,11 +41,16 @@ class WordController {
       const result = await wordService.getAllWords();
 
       logger.info(`获取单词列表成功: ${result.length}`);
-      return res.json(result);
+      return res.json({ 
+        message: '获取单词列表成功',
+        result
+      });
 
     } catch (error: any) {
       logger.error(`获取单词列表失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_ALL_WORDS_FAILED',
+        message: error.message });
     }
   }
 
@@ -57,11 +67,16 @@ class WordController {
       const result = await wordService.getWordById(wordId, userId);
 
       logger.info(`获取单词详情成功: ${result.data._id}`);
-      return res.json(result);
+      return res.json({ 
+        message: '获取单词详情成功',
+        result
+      });
 
     } catch (error: any) {
       logger.error(`获取单词详情失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_WORD_BY_ID_FAILED',
+        message: error.message });
     }
   }
 
@@ -78,10 +93,15 @@ class WordController {
       const result = await wordService.updateWord(wordId, word);
 
       logger.info(`更新单词成功: ${wordId}`);
-      return res.json(result);
+      return res.json({ 
+        message: '更新单词成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`更新单词失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'UPDATE_WORD_FAILED',
+        message: error.message });
     }
   }
 
@@ -97,10 +117,15 @@ class WordController {
       const result = await wordService.deleteWord(wordId);
 
       logger.info(`删除单词成功: ${wordId}`);
-      return res.json(result);
+      return res.json({ 
+        message: '删除单词成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`删除单词失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'DELETE_WORD_FAILED',
+        message: error.message });
     }
   }
 
@@ -117,10 +142,15 @@ class WordController {
       const result = await wordFavService.getLearningStatus(userId, wordId);
   
       logger.info(`获取学习状态成功: ${result.isLearned}`);
-      return res.json(result);
+      return res.json({ 
+        message: '获取学习状态成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_LEARNING_STATUS_FAILED',
+        message: error.message });
     }
   }
 
@@ -137,10 +167,15 @@ class WordController {
       const result = await wordFavService.checkFavStatusByWordId(userId, wordId);
   
       logger.info(`获取收藏状态成功: ${result}`);
-      return res.json(result);
+      return res.json({ 
+        message: '获取收藏状态成功',
+        result
+      });
     } catch (error: any) {
       logger.error(`获取收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'GET_FAVORITE_STATUS_FAILED',
+        message: error.message });
     }
   } 
 
@@ -158,10 +193,15 @@ class WordController {
       const status = await wordLearnService.updateLearningStatus(userId, wordId, learningStatus);
 
       logger.info(`更新学习状态成功: ${status.isLearned}`);
-      return res.json(status);
+      return res.json({ 
+        message: '更新学习状态成功',
+        status
+      });
     } catch (error: any) {
       logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'UPDATE_LEARNING_STATUS_FAILED',
+        message: error.message });
     }
   }
 
@@ -178,10 +218,15 @@ class WordController {
       const status = await wordFavService.addFavoriteWord(userId, wordId);
 
       logger.info(`更新收藏状态成功: ${status.isFavorite}`);
-      return res.json(status);
+      return res.json({ 
+        message: '更新收藏状态成功',
+        status
+      });
     } catch (error: any) {
       logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'UPDATE_FAVORITE_STATUS_FAILED',
+        message: error.message });
     }
   }
 
@@ -198,10 +243,15 @@ class WordController {
       const status = await wordFavService.deleteFavoriteWord(userId, wordId);
   
       logger.info(`更新收藏状态成功: ${status.isFavorite}`);
-      return res.json(status);
+      return res.json({ 
+        message: '更新收藏状态成功',
+        status
+      });
     } catch (error: any) {
       logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        code: 'UPDATE_FAVORITE_STATUS_FAILED',
+        message: error.message });
     }
   }
 }

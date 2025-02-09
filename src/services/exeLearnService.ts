@@ -45,7 +45,7 @@ class ExeLearnService {
    */
   async deleteStatus(userId: string, exerciseId: string): Promise<{isLearned: boolean}> {
     const deletedStatus = await ExerciseLearned.findOneAndDelete({ userId, exerciseId });
-    return deletedStatus ? { isLearned: true } : { isLearned: false };
+    return deletedStatus ? { isLearned: false } : { isLearned: true };
   }
 }
 
