@@ -114,7 +114,6 @@ class ExerciseController {
   async getAudio(req: Request, res: Response) {
     try {
       const { key } = req.query;
-      if (!key) return res.status(400).json({ message: '缺少音频 key' });
 
       await exerciseService.streamAudio(key as string, res);
       logger.info(`获取音频成功: ${key}`);

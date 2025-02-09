@@ -13,9 +13,6 @@ router.get('/:id', authMiddleware, exerciseController.getExerciseById); // 获�
 router.patch('/:id', authMiddleware, exerciseController.updateExercise); // 更新练习
 router.delete('/:id', authMiddleware, exerciseController.deleteExercise); // 删除练习
 
-// 音频流式传输
-router.get('/audio', authMiddleware, exerciseController.getAudio);
-
 // 学习状态：已学/未学，仅限练习题
 router.get('/:id/learning', authMiddleware, exerciseController.getLearningStatus); // 获取学习状态
 router.post('/:id/learning', authMiddleware, exerciseController.learnExercise); // 标为已学

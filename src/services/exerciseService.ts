@@ -79,15 +79,13 @@ class ExerciseService {
    * @param {string} userId - 用户ID
    * @returns {Promise<any>} 返回练习详情
    */
-  async getExerciseById(exerciseId: string, userId: string): Promise<{message: string, data: {
-    _id: string; seq: string; title: string; category: Category; source: ExerciseSource; isVIPOnly: boolean; 
-    isUserVIP: boolean; isLearned: boolean; isFavorite: boolean; intro?: any; dialogs?: any; }}> {
+  async getExerciseById(exerciseId: string, userId: string): Promise<{message: string, data: any}> {
     if (!exerciseId || !userId) {
       throw new Error('Exercise ID and User ID are required');
     }
 
     const isUserVIP = await userService.checkVIPStatus(userId);
-    const exercise = await Exercise.findById(exerciseId);
+    const exercise = await Exercise.findById(exerciseId).lean();
     if (!exercise) throw new Error('Exercise not found');
 
     const isLearned = await exeLearnService.checkStatus(userId, exerciseId);
@@ -129,12 +127,7 @@ class ExerciseService {
     return {
       message: 'VIP_SUCCESS',
       data: {
-        _id: exerciseId,
-        seq: exercise.seq,
-        title: exercise.title,
-        category: exercise.category,
-        source: exercise.source,
-        isVIPOnly: exercise.isVIPOnly,
+        ...exercise,
         isUserVIP: isUserVIP,
         isLearned: isLearned,
         isFavorite: isFavorite,
@@ -186,7 +179,7 @@ class ExerciseService {
       res.setHeader('Accept-Ranges', 'bytes');
       
       response.data.pipe(res);
-      
+
       logger.info(`流式传输音频: ${url}`);
       return response.data.pipe(res);
     } catch (error) {
