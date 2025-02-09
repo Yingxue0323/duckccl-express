@@ -3,8 +3,9 @@ import { exeLearnService } from './exeLearnService';
 import { exeFavService } from './exeFavService';
 import { userService } from './userService';
 import { Category, ExerciseSource} from '../utils/constants';
-import { getSignedUrl } from '../utils/s3';
 import logger from '../utils/logger';
+import axios from 'axios';
+import { Response } from 'express';
 
 class ExerciseService {
 
@@ -16,22 +17,6 @@ class ExerciseService {
   async createExercise(data: any): Promise<any> {
     return await Exercise.create({data});
   }
-
-  // async parseExerciseTitle(fullTitle: string) {
-  //   const match = fullTitle.match(/^(\w+)\s+[A-Z](\d+)\.(.+)$/);
-  //   if (!match) {
-  //     throw new Error(
-  //       '标题格式不正确。应为：类别 字母数字.标题' +
-  //       '例如：Business B001.Seafood Export'
-  //     );
-  //   }
-
-  //   return {
-  //     category: match[1],           // "Business"
-  //     seq: match[2],               // "001"
-  //     title: match[3].trim()       // "Seafood Export"
-  //   };
-  // }
 
   /**
    * 获取所有练习
@@ -105,27 +90,23 @@ class ExerciseService {
     const exercise = await Exercise.findById(exerciseId);
     if (!exercise) throw new Error('Exercise not found');
 
-    try { 
-      logger.info(`进入预签名阶段`);
-      const [signedIntro, signedDialogs, isLearned, isFavorite] = await Promise.all([
-        { ...exercise.intro, url: await getSignedUrl(exercise.intro.url) }, // 获取预签名后的intro
-        Promise.all(exercise.dialogs.map(async dialog => ({
-        ...dialog,
-        url: await getSignedUrl(dialog.url),
-        trans_url: dialog.trans_url ? await getSignedUrl(dialog.trans_url) : undefined
-      }))),
-      exeLearnService.checkStatus(userId, exerciseId), // 已学/未学，返回boolean
-      exeFavService.checkFavStatusByExeId(userId, exerciseId) // 是否收藏，返回boolean
-    ]);
-    } catch (error) {
-      logger.error(`预签名失败: ${error}`);
-      throw new Error('预签名失败');
-    }
+    const isLearned = await exeLearnService.checkStatus(userId, exerciseId);
+    const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
 
-    const isLearned = false;
-    const isFavorite = false;
-    const signedIntro = '';
-    const signedDialogs = [''];
+    // 转换 intro 的 URL
+    const introWithUrl = {
+      ...exercise.intro,
+      url: `/api/v1/exercises/audios?key=${encodeURIComponent(exercise.intro.url)}`
+    };
+
+    // 转换 dialogs 中的 URL
+    const dialogsWithUrl = exercise.dialogs.map(dialog => ({
+      ...dialog,
+      url: `/api/v1/exercises/audios?key=${encodeURIComponent(dialog.url)}`,
+      trans_url: dialog.trans_url 
+        ? `/api/v1/exercises/audios?key=${encodeURIComponent(dialog.trans_url)}`
+        : undefined
+    }));
 
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {
@@ -157,8 +138,8 @@ class ExerciseService {
         isUserVIP: isUserVIP,
         isLearned: isLearned,
         isFavorite: isFavorite,
-        intro: signedIntro,
-        dialogs: signedDialogs
+        intro: introWithUrl,
+        dialogs: dialogsWithUrl
       }
     };
   }
@@ -184,6 +165,34 @@ class ExerciseService {
     const deletedExercise = await Exercise.findByIdAndDelete(exerciseId);
     if (!deletedExercise) throw new Error('Exercise not found');
     return true;
+  }
+
+  /**
+   * 获取音频文件并流式传输给前端
+   */
+  async streamAudio(url: string, res: Response) {
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: url,
+        responseType: 'stream'
+      });
+
+      const contentType = response.headers['content-type'] || 'audio/mpeg';
+      const contentLength = response.headers['content-length'];
+      // 设置响应头
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Length', contentLength);
+      res.setHeader('Accept-Ranges', 'bytes');
+      
+      response.data.pipe(res);
+      
+      logger.info(`流式传输音频: ${url}`);
+      return response.data.pipe(res);
+    } catch (error) {
+      logger.error(`流式传输音频失败: ${error}`);
+      throw new Error(`音频流式传输失败: ${error}`);
+    }
   }
 }
 

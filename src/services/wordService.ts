@@ -1,5 +1,4 @@
 import Word, { IWord } from '../models/Word';
-import { getSignedUrl } from '../utils/s3';
 import { wordFavService } from './wordFavService';
 import { wordLearnService } from './wordLearnService';
 
@@ -31,7 +30,7 @@ class WordService {
   async getWordById(wordId: string, userId: string): Promise<any> {
     const word = await Word.findById(wordId);
     if (!word) throw new Error('Word not found');
-    const audio = await getSignedUrl(word.audioUrl);
+    // const audio = await getSignedUrl(word.audioUrl);
 
     const isFavorite = await wordFavService.checkFavStatusByWordId(userId, wordId);
     const learningStatus = await wordLearnService.checkStatus(userId, wordId);
@@ -39,7 +38,7 @@ class WordService {
     return {
       wordId: word._id.toString(),
       word: word.word,
-      audio: audio,
+      // audio: audio,
       translations: word.translations,
       isFavorite: isFavorite,
       learningStatus: learningStatus

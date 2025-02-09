@@ -105,6 +105,26 @@ class ExerciseController {
     }
   }
 
+  /**
+   * 获取音频
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回音频
+   */
+  async getAudio(req: Request, res: Response) {
+    try {
+      const { key } = req.query;
+      if (!key) return res.status(400).json({ message: '缺少音频 key' });
+
+      await exerciseService.streamAudio(key as string, res);
+      logger.info(`获取音频成功: ${key}`);
+      return res.status(200).json({ message: '音频获取成功' });
+    } catch (error: any) {
+      logger.error(`获取音频失败: ${JSON.stringify({ error: error.message })}`);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
 //-----------------------------------------------学习状态-----------------------------------------------
   /**
    * 获取学习状态
