@@ -68,7 +68,7 @@ class ExeFavService {
   * @param {boolean} isFavorite - 想成为的收藏状态
   * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
   */
-  async updateItemFavorites(userId: string, itemId: string, itemType: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
+  async updateItemFavorites(userId: string, itemId: string, itemType: 'Exercise' | 'Audio', isFavorite: boolean): Promise<{isFavorite: boolean}> {
     // 检查是否已存在收藏
     const existingFavorite = await ExerciseFavorite.findOne({
       userId,

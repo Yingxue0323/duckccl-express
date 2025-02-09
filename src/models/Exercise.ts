@@ -3,6 +3,7 @@ import { CATEGORIES, Category,
          EXERCISE_SOURCES, ExerciseSource } from '../utils/constants';
 
 interface Audio {
+  _id: mongoose.Types.ObjectId;
   order: number;
   text: string;
   url: string;

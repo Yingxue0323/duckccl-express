@@ -1,9 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUserPractice extends Document {
-  _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  audioId: mongoose.Types.ObjectId;
+  userId: string;
+  audioId: string;
   recordingUrl: string;           // 用户录制的音频
   duration: number;
 
@@ -13,13 +12,11 @@ export interface IUserPractice extends Document {
 
 const UserPracticeSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   audioId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Audio',
+    type: String,
     required: true
   },
   recordingUrl: {

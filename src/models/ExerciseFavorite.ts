@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExerciseFavorite extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  itemId: mongoose.Types.ObjectId;
+  userId: string;
+  itemId: string;
   itemType: 'Exercise' | 'Audio';
 
   createdAt: Date;
@@ -12,13 +12,11 @@ export interface IExerciseFavorite extends Document {
 
 const ExerciseFavoriteSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   itemId: {
-    type: Schema.Types.ObjectId,
-    refPath: 'itemType',
+    type: String,
     required: true,
     index: true
   },

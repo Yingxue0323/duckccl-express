@@ -15,8 +15,8 @@ class ExerciseController {
    */
   async createExercise(req: Request, res: Response) {
     try { 
-      const exercise = req.body;
-      const result = await exerciseService.createExercise(exercise);
+      const data = req.body;
+      const result = await exerciseService.createExercise(data);
 
       logger.info(`创建练习成功: ${result.exercise._id}`);
       return res.json({ 
@@ -333,8 +333,7 @@ class ExerciseController {
    */
   async favoriteAudio(req: Request, res: Response) {
     try {
-      const exerciseId = req.params.exerciseId;
-      const audioId = req.params.audioId;
+      const audioId = req.params.id;
       const userId = req.user._id.toString();
       const status = await exeFavService.updateItemFavorites(userId, audioId, 'Audio', true);
 

@@ -2,9 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { LEARNED_STATUS, LearnedStatus } from '../utils/constants';
 
 export interface IWordLearning extends Document {
-  _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  wordId: mongoose.Types.ObjectId;
+  userId: string;
+  wordId: string;
   correctCount: number;
   status: LearnedStatus;
 
@@ -14,13 +13,11 @@ export interface IWordLearning extends Document {
 
 const WordLearningSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   wordId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Word',
+    type: String,
     required: true
   },
   correctCount: {

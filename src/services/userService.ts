@@ -13,9 +13,10 @@ class UserService {
       lang: LANGUAGES.CHINESE_SIMPLIFIED,
       loginType: LOGIN_TYPE.WECHAT
     });
-    const token = generateToken(user._id.toString());
+    const result = await user.save();
+    const token = generateToken(result._id.toString());
 
-    return { user, token };
+    return { user: result, token };
   }
 
   // TODO: 检查返回格式是否显示

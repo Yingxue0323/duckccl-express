@@ -25,7 +25,16 @@ class ExerciseService {
    * @returns {Promise<any>} 返回创建后的练习对象
    */
   async createExercise(data: any): Promise<any> {
-    return await Exercise.create({data});
+    const exercise = await Exercise.create({
+      seq: data.seq,
+      title: data.title,
+      category: data.category,
+      source: data.source,
+      isVIPOnly: data.isVIPOnly,
+      intro: data.intro,
+      dialogs: data.dialogs});
+    const result = await exercise.save();
+    return { exercise: result };
   }
 
   /**

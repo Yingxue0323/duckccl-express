@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExerciseLearned extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  exerciseId: mongoose.Types.ObjectId;
+  userId: string;
+  exerciseId: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -11,13 +11,11 @@ export interface IExerciseLearned extends Document {
 
 const ExerciseLearnedSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   exerciseId: {
-    type: Schema.Types.ObjectId,
-    ref: 'ExerciseNew',
+    type: String,
     required: true,
     unique: true
   }

@@ -10,7 +10,8 @@ class WordService {
   */
   async createWord(word: any): Promise<IWord> {
     const newWord = await Word.create(word);
-    return newWord;
+    const result = await newWord.save();
+    return result;
   }
 
  /**

@@ -1,9 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IWordFavorite extends Document {
-  _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  wordId: mongoose.Types.ObjectId;
+export interface IWordFavorite extends Document { 
+  userId: string;
+  wordId: string;
   
   createdAt: Date;
   updatedAt: Date;
@@ -11,13 +10,11 @@ export interface IWordFavorite extends Document {
 
 const WordFavoriteSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   wordId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Word',
+    type: String,
     required: true
   }
 }, {
