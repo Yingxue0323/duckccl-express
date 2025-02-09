@@ -32,6 +32,8 @@ jobs:
         WX_CERTIFICATE: ${{ secrets.WX_CERTIFICATE }}
         AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        S3_REGION: ${{ secrets.S3_REGION }}
+        S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
@@ -62,7 +64,7 @@ jobs:
         echo "依赖更新完成，开始创建.env文件🍃..."
 
         # 创建环境变量文件
-        env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_|ADMIN_SECRET_KEY|AWS_|S3)' > /var/www/koala-ccl/.env
+        env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_|ADMIN_|AWS_|S3_)' > /var/www/koala-ccl/.env
         echo ".env文件创建完成，开始设置权限🔒..."
         
         # 设置权限
@@ -70,16 +72,11 @@ jobs:
         chmod -R 755 /var/www/koala-ccl
         echo "权限设置完成，开始重启应用🔄..."
 
-        # 只重启 PM2 如果代码有变化
-        if rsync -anic dist/ /var/www/koala-ccl/dist/ | grep -q '^>'; then
-          echo "Code changed, restarting PM2..."
-          if pm2 list | grep -q "koala"; then
-            pm2 reload koala --update-env
-          else
-            pm2 start dist/app.js --name koala
-          fi
-          pm2 save
+        
+        if pm2 list | grep -q "koala"; then
+          pm2 reload koala --update-env
         else
-          echo "No code changes detected, skipping PM2 restart."
+          pm2 start ecosystem.config.js
         fi
+        pm2 save
         echo "应用重启完成✅"

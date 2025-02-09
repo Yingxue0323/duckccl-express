@@ -146,17 +146,19 @@ class ExerciseController {
       const { key } = req.query;
     
       await exerciseService.streamAudio(key as string, res);
-      logger.info(`获取音频成功: ${key}`);
-      return res.status(200).json({ 
-        message: '音频获取成功',
-        audioUrl: key
-      });
+      // logger.info(`获取音频成功: ${key}`);
+      // return res.status(200).json({ 
+      //   message: '音频获取成功',
+      //   result
+      // });
     } catch (error: any) {
-      logger.error(`获取音频失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ 
-        code: 'GET_AUDIO_FAILED',
-        message: error.message
-      });
+      if (!res.headersSent) {
+        logger.error(`获取音频失败: ${error}`);
+        return res.status(500).json({
+          code: 'GET_AUDIO_FAILED',
+          message: `音频获取失败: ${error.message}`
+        });
+      }
     }
   }
 

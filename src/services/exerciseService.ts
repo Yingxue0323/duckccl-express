@@ -4,8 +4,18 @@ import { exeFavService } from './exeFavService';
 import { userService } from './userService';
 import { Category, ExerciseSource} from '../utils/constants';
 import logger from '../utils/logger';
-import axios from 'axios';
 import { Response } from 'express';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
+import { config } from '../configs';
+
+const s3Client = new S3Client({
+  region: config.s3.region || 'ap-southeast-2',
+  credentials: {
+    accessKeyId: config.aws.accessKey || '',
+    secretAccessKey: config.aws.secretAccessKey || ''
+  }
+});
 
 class ExerciseService {
 
@@ -90,6 +100,10 @@ class ExerciseService {
 
     const isLearned = await exeLearnService.checkStatus(userId, exerciseId);
     const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+    const dialogsWithIds = exercise.dialogs.map((dialog: any) => ({
+      ...dialog,
+      _id: dialog._id
+    }));
 
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {
@@ -117,7 +131,7 @@ class ExerciseService {
         isLearned: isLearned,
         isFavorite: isFavorite,
         intro: exercise.intro,
-        dialogs: exercise.dialogs
+        dialogs: dialogsWithIds
       }
     };
   }
@@ -150,23 +164,35 @@ class ExerciseService {
    */
   async streamAudio(url: string, res: Response) {
     try {
-      const response = await axios({
-        method: 'GET',
-        url: url,
-        responseType: 'stream'
+      logger.info(`开始流式传输音频`);
+
+      // 从 URL 解析出 bucket 和 key
+      const s3Url = new URL(url);
+      const bucket = s3Url.hostname.split('.')[0];
+      const key = decodeURIComponent(s3Url.pathname.substring(1)); // 移除开头的 '/'
+
+      logger.info(`Accessing S3: bucket=${bucket}, key=${key}`);
+
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: key
       });
 
-      const contentType = response.headers['content-type'] || 'audio/mpeg';
-      const contentLength = response.headers['content-length'];
-      // 设置响应头
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Length', contentLength);
-      res.setHeader('Accept-Ranges', 'bytes');
+      const s3Response = await s3Client.send(command);
       
-      response.data.pipe(res);
+      if (!s3Response.Body) {
+        throw new Error('No response body from S3');
+      }
+      
+      res.setHeader('Content-Type', s3Response.ContentType || 'audio/mpeg');
+      if (s3Response.ContentLength) {
+        res.setHeader('Content-Length', s3Response.ContentLength);
+      }
+      res.setHeader('Accept-Ranges', 'bytes');
 
-      logger.info(`流式传输音频成功: ${url}`);
-      return response.data.pipe(res);
+      const stream = s3Response.Body as Readable;
+      return stream.pipe(res);
+
     } catch (error: any) {
       logger.error(`流式传输音频失败: ${error}`);
       throw new Error(`音频流式传输失败: ${JSON.stringify({ error: error.message })}`);

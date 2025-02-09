@@ -18,6 +18,10 @@ export const config = {
     accessKey: process.env.AWS_ACCESS_KEY!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
   },
+  s3: {
+    region: process.env.S3_REGION!,
+    bucketName: process.env.S3_BUCKET_NAME!
+  },
   jwt: {
     secret: process.env.JWT_SECRET!,
     expiresIn: process.env.JWT_EXPIRES_IN!
