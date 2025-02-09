@@ -173,12 +173,14 @@ class ExerciseController {
     try {
       const exerciseId = req.params.id;
       const userId = req.user._id.toString();
-      const result = await exeLearnService.checkStatus(userId, exerciseId);
-  
-      logger.info(`获取学习状态成功: ${result}`);
+      const status = await exeLearnService.checkStatus(userId, exerciseId);
+    
+      logger.info(`获取学习状态成功: ${status}`);
       return res.json({ 
         message: '获取学习状态成功',
-        result
+        status: {
+          isLearned: status
+        }
       });
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
@@ -252,12 +254,14 @@ class ExerciseController {
     try {
       const exerciseId = req.params.exerciseId;
       const userId = req.user._id.toString();
-      const result = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+      const status = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
   
-      logger.info(`获取练习题收藏状态成功: {${exerciseId}: ${result}}`);
+      logger.info(`获取练习题收藏状态成功: {${exerciseId}: ${status}}`);
       return res.json({ 
         message: '获取练习题收藏状态成功',
-        result
+        status: {
+          isFavorite: status
+        }
       });
     } catch (error: any) {
       logger.error(`获取练习题收藏状态失败: ${JSON.stringify({ error: error.message })}`);
@@ -278,12 +282,14 @@ class ExerciseController {
     try {
       const audioId = req.params.audioId;
       const userId = req.user._id.toString();
-      const result = await exeFavService.checkFavStatusByAudioId(userId, audioId);
+      const status = await exeFavService.checkFavStatusByAudioId(userId, audioId);
   
-      logger.info(`获取音频收藏状态成功: {${audioId}: ${result}}`);
+      logger.info(`获取音频收藏状态成功: {${audioId}: ${status}}`);
       return res.json({ 
         message: '获取音频收藏状态成功',
-        result
+        status: {
+          isFavorite: status
+        }
       });
     } catch (error: any) {
       logger.error(`获取音频收藏状态失败: ${JSON.stringify({ error: error.message })}`);

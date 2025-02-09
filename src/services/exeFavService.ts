@@ -69,45 +69,38 @@ class ExeFavService {
   * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
   */
   async updateItemFavorites(userId: string, itemId: string, itemType: string, isFavorite: boolean): Promise<{isFavorite: boolean}> {
-    if (isFavorite && itemType === 'Exercise') {
-      await this._addFavoriteExercise(userId, itemId);
-    } else if (!isFavorite && itemType === 'Exercise') {
-      await this._deleteFavoriteExercise(itemId);
-    } else if (isFavorite && itemType === 'Audio') {
-      await this._addFavoriteAudio(userId, itemId);
-    } else if (!isFavorite && itemType === 'Audio') {
-      await this._deleteFavoriteAudio(itemId);
+    // 检查是否已存在收藏
+    const existingFavorite = await ExerciseFavorite.findOne({
+      userId,
+      itemId,
+      itemType
+    });
+    // 如果已存在收藏
+    if (existingFavorite) {
+      // 如果取消收藏，则删除记录，并减少 favoriteCount
+      if (!isFavorite) {
+        await ExerciseFavorite.deleteOne({ _id: existingFavorite._id });
+
+        if (itemType === "Exercise") {
+          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.exercise": -1 } });
+        } else if (itemType === "Audio") {
+          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.audio": -1 } }); 
+        }
+      } 
+    } else { 
+      // 如果不存在收藏，打算新增，则添加收藏
+      if (isFavorite) {
+        await ExerciseFavorite.create({ userId, itemId, itemType });
+
+        if (itemType === "Exercise") {
+          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.exercise": 1 } });
+        } else if (itemType === "Audio") {
+          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.audio": 1 } });
+        }
+      }
     }
 
-    // 更新用户收藏数量
-    if (isFavorite) {
-      await User.findByIdAndUpdate(userId, { $inc: { 'favoriteCount.exercise': 1 } });
-      return { isFavorite: true };
-    } else {
-      await User.findByIdAndUpdate(userId, { $inc: { 'favoriteCount.exercise': -1 } });
-      return { isFavorite: false };
-    }
-  }
-
-  // 新增收藏练习
-  async _addFavoriteExercise(userId: string, itemId: string): Promise<boolean> {
-    await ExerciseFavorite.create({ userId, itemId, itemType: 'Exercise' });
-    return true;
-  }
-  // 删除收藏练习
-  async _deleteFavoriteExercise(itemId: string): Promise<boolean> {
-    await ExerciseFavorite.deleteOne({ itemId });
-    return true;
-  }
-  // 新增收藏音频
-  async _addFavoriteAudio(userId: string, itemId: string): Promise<boolean> {
-    await ExerciseFavorite.create({ userId, itemId, itemType: 'Audio' });
-    return true;
-  }
-  // 删除收藏音频
-  async _deleteFavoriteAudio(itemId: string): Promise<boolean> {
-    await ExerciseFavorite.deleteOne({ itemId });
-    return true;
+    return { isFavorite };
   }
 }
 
