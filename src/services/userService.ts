@@ -26,14 +26,12 @@ class UserService {
   }
 
   // 获取用户信息
-  async getUserById(userId: string): Promise<IUser> {
+  async getUserById(userId: string): Promise<IUser | null> {
     const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
     return user;
   }
-  async getUserByOpenid(openid: string): Promise<IUser> {
+  async getUserByOpenid(openid: string): Promise<IUser | null> {
     const user = await User.findOne({ openId:openid });
-    if (!user) throw new Error('User not found');
     return user;
   }
 
