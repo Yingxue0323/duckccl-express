@@ -38,6 +38,14 @@ class UserController {
       const { id } = req.params;
       const user = await userService.getUserById(id);
 
+      if (!user) {
+        logger.error(`获取用户信息失败: 用户不存在`);
+        return res.status(404).json({ 
+          code: 'USER_NOT_FOUND',
+          message: '用户不存在'
+        });
+      }
+
       logger.info(`获取用户信息成功: ${user._id}`);
       return res.json({ 
         message: '获取用户信息成功',
@@ -62,6 +70,14 @@ class UserController {
     try {
       const { openid } = req.params;
       const user = await userService.getUserByOpenid(openid);
+
+      if (!user) {
+        logger.error(`获取用户信息失败: 用户不存在`);
+        return res.status(404).json({ 
+          code: 'USER_NOT_FOUND',
+          message: '用户不存在'
+        });
+      }
 
       logger.info(`获取用户信息成功: ${user._id}`);
       return res.json({ 
