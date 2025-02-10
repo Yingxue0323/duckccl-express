@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IWordFavorite extends Document { 
-  userId: string;
+  openId: string;
   wordId: string;
   
   createdAt: Date;
@@ -9,7 +9,7 @@ export interface IWordFavorite extends Document {
 }
 
 const WordFavoriteSchema = new Schema({
-  userId: {
+  openId: {
     type: String,
     required: true
   },
@@ -22,6 +22,6 @@ const WordFavoriteSchema = new Schema({
 });
 
 // Compound Index: Each user cannot repeat collecting the same word
-WordFavoriteSchema.index({ userId: 1, wordId: 1 }, { unique: true });
+WordFavoriteSchema.index({ openId: 1, wordId: 1 }, { unique: true });
 
 export default mongoose.model<IWordFavorite>('WordFavorite', WordFavoriteSchema); 

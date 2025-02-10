@@ -4,11 +4,11 @@ import User from '../models/User';
 class ExeFavService {
  /**
   * 获取所有收藏的练习id列表和数量
-  * @param {string} userId - 用户ID
+  * @param {string} openId - 用户ID
   * @returns {Promise<{count: number, ids: string[]}>} 返回收藏id列表和数量
   */
-  async getAllFavoriteExercises(userId: string): Promise<{count: number, ids: string[]}> {
-    const favoriteList = await ExerciseFavorite.find({userId, itemType: 'Exercise'})
+  async getAllFavoriteExercises(openId: string): Promise<{count: number, ids: string[]}> {
+    const favoriteList = await ExerciseFavorite.find({openId, itemType: 'Exercise'})
       .select('itemId').lean();
     return {
       count: favoriteList.length,
@@ -21,8 +21,8 @@ class ExeFavService {
   * @param {string} userId - 用户ID
   * @returns {Promise<{count: number, ids: string[]}>} 返回收藏id列表和数量
   */
-  async getAllFavoriteAudios(userId: string): Promise<{count: number, ids: string[]}> {
-    const favList = await ExerciseFavorite.find({userId, itemType: 'Audio'})
+  async getAllFavoriteAudios(openId: string): Promise<{count: number, ids: string[]}> {
+    const favList = await ExerciseFavorite.find({openId, itemType: 'Audio'})
       .select('itemId').lean();
     return {
       count: favList.length,
@@ -32,13 +32,13 @@ class ExeFavService {
 
  /**
   * 查看某练习是否收藏
-  * @param {string} userId - 用户ID
+  * @param {string} openId - 用户ID
   * @param {string} exerciseId - 练习ID
   * @returns {Promise<boolean>} 返回是否收藏
   */
-  async checkFavStatusByExeId(userId: string, exerciseId: string): Promise<boolean> {
+  async checkFavStatusByExeId(openId: string, exerciseId: string): Promise<boolean> {
     const favoriteStatus = await ExerciseFavorite.findOne({
-      userId,
+      openId,
       itemId: exerciseId,
       itemType: 'Exercise'
     });
@@ -47,13 +47,13 @@ class ExeFavService {
 
  /**
   * 查看单个音频是否收藏
-  * @param {string} userId - 用户ID
+  * @param {string} openId - 用户ID
   * @param {string} audioId - 音频ID
   * @returns {Promise<boolean>} 返回是否收藏
   */
-  async checkFavStatusByAudioId(userId: string, audioId: string): Promise<boolean> {
+  async checkFavStatusByAudioId(openId: string, audioId: string): Promise<boolean> {
     const favoriteStatus = await ExerciseFavorite.findOne({
-      userId,
+      openId,
       itemId: audioId,
       itemType: 'Audio'
     });
@@ -68,10 +68,10 @@ class ExeFavService {
   * @param {boolean} isFavorite - 想成为的收藏状态
   * @returns {Promise<{isFavorite: boolean}>} 返回更新后的收藏状态
   */
-  async updateItemFavorites(userId: string, itemId: string, itemType: 'Exercise' | 'Audio', isFavorite: boolean): Promise<{isFavorite: boolean}> {
+  async updateItemFavorites(openId: string, itemId: string, itemType: 'Exercise' | 'Audio', isFavorite: boolean): Promise<{isFavorite: boolean}> {
     // 检查是否已存在收藏
     const existingFavorite = await ExerciseFavorite.findOne({
-      userId,
+      openId,
       itemId,
       itemType
     });
@@ -82,20 +82,20 @@ class ExeFavService {
         await ExerciseFavorite.deleteOne({ _id: existingFavorite._id });
 
         if (itemType === "Exercise") {
-          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.exercise": -1 } });
+          await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.exercise": -1 } });
         } else if (itemType === "Audio") {
-          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.audio": -1 } }); 
+          await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": -1 } }); 
         }
       } 
     } else { 
       // 如果不存在收藏，打算新增，则添加收藏
       if (isFavorite) {
-        await ExerciseFavorite.create({ userId, itemId, itemType });
+        await ExerciseFavorite.create({ openId, itemId, itemType });
 
         if (itemType === "Exercise") {
-          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.exercise": 1 } });
+          await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.exercise": 1 } });
         } else if (itemType === "Audio") {
-          await User.findByIdAndUpdate(userId, { $inc: { "favoriteCount.audio": 1 } });
+          await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": 1 } });
         }
       }
     }

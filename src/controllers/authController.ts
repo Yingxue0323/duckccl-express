@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/authService';
+import { SuccessHandler, ErrorHandler } from '../utils/response';
+import { ResponseCode } from '../utils/constants';
 import logger from '../utils/logger';
 
 class AuthController {
@@ -9,18 +11,11 @@ class AuthController {
       const { code } = req.body;
       const { user, token } = await authService.wechatLogin(code);
 
-      logger.info(`登录成功: 用户id: ${user._id}\n token: ${token}`);
-      return res.json({ 
-        message: '登录成功',
-        user, 
-        token 
-      });
+      logger.info(`微信登录成功: ${user.openId}`);
+      return SuccessHandler(res, { user, token });
     } catch (error: any) {
-      logger.error(`登录失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({ 
-        code: 'WX_LOGIN_FAILED',
-        message: error.message 
-      });
+      logger.error(`微信登录失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.WX_LOGIN_FAILED, error.message);
     }
   };
 
@@ -31,38 +26,24 @@ class AuthController {
       const { token } = await authService.refreshToken(code);
 
       logger.info(`刷新token成功: ${token}`);
-      return res.json({ 
-        message: '刷新token成功',
-        token 
-      });
+      return SuccessHandler(res, { token });
       
     } catch (error: any) {
       logger.error(`刷新token失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({
-        code: 'REFRESH_FAILED',
-        message: error.message
-      });
+      return ErrorHandler(res, ResponseCode.TOKEN_REFRESH_FAILED, error.message);
     }
   }
 
   // 微信登出
   async wechatLogout(req: Request, res: Response): Promise<any> {
     try {
-      const result = await authService.wechatLogout(req.user._id.toString());
-    
-      logger.info(`登出成功: 用户id: ${req.user._id}`);
-      return res.json({ 
-        message: '登出成功',
-        success: result.success 
-      });
+      const result = await authService.wechatLogout(req.user.openId);
 
+      logger.info(`微信登出成功: ${req.user.openId}`);
+      return SuccessHandler(res, { result });
     } catch (error: any) {
-
-      logger.error(`登出失败: ${JSON.stringify({ error: error.message })}`);
-      return res.status(500).json({
-        code: 'LOGOUT_FAILED',
-        message: error.message
-      });
+      logger.error(`微信登出失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.LOGOUT_FAILED, error.message);
     }
   }
 } 

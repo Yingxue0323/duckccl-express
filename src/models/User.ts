@@ -9,7 +9,6 @@ interface IFavoriteCount {
 }
 
 export interface IUser extends Document {
-  _id: mongoose.Types.ObjectId;
   userCode: string;        // 7-9位用户身份码，如 "0000001"
   nickname: string;
   avatarUrl?: string; 

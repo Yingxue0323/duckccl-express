@@ -6,8 +6,8 @@ class ExeLearnService {
    * @param {string} userId - 用户ID
    * @returns {Promise<{count: number, ids: string[]}>} 返回学过的练习题id列表和数量
    */
-  async getAllLearnedExercises(userId: string): Promise<{count: number, ids: string[]}> {
-    const learnedList = await ExerciseLearned.find({ userId: userId }).select('exerciseId').lean();
+  async getAllLearnedExercises(openId: string): Promise<{count: number, ids: string[]}> {
+    const learnedList = await ExerciseLearned.find({ openId: openId }).select('exerciseId').lean();
     return {
       count: learnedList.length,
       ids: learnedList.map(item => item.exerciseId.toString())
@@ -20,9 +20,9 @@ class ExeLearnService {
    * @param {string} exerciseId - 练习ID
    * @returns {Promise<boolean>} 返回练习是否学过
    */
-  async checkStatus(userId: string, exerciseId: string): Promise<boolean> {
+  async checkStatus(openId: string, exerciseId: string): Promise<boolean> {
     return await ExerciseLearned.findOne(
-      { userId: userId, exerciseId: exerciseId }
+      { openId, exerciseId }
     ) ? true : false; 
   }
 
@@ -32,8 +32,8 @@ class ExeLearnService {
    * @param {string} exerciseId - 练习ID
    * @returns {Promise<any>} 返回标记后的学习状态
    */
-  async createStatus(userId: string, exerciseId: string): Promise<{isLearned: boolean}> {
-    const newIsLearned = await ExerciseLearned.create({ userId, exerciseId });
+  async createStatus(openId: string, exerciseId: string): Promise<{isLearned: boolean}> {
+    const newIsLearned = await ExerciseLearned.create({ openId, exerciseId });
     return newIsLearned ? { isLearned: true } : { isLearned: false };
   }
 
@@ -43,8 +43,8 @@ class ExeLearnService {
    * @param {string} exerciseId - 练习ID
    * @returns {Promise<any>} 返回标记后的学习状态
    */
-  async deleteStatus(userId: string, exerciseId: string): Promise<{isLearned: boolean}> {
-    const deletedStatus = await ExerciseLearned.findOneAndDelete({ userId, exerciseId });
+  async deleteStatus(openId: string, exerciseId: string): Promise<{isLearned: boolean}> {
+    const deletedStatus = await ExerciseLearned.findOneAndDelete({ openId, exerciseId });
     return deletedStatus ? { isLearned: false } : { isLearned: true };
   }
 }

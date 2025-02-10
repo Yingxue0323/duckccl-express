@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { LEARNED_STATUS, LearnedStatus } from '../utils/constants';
 
 export interface IWordLearning extends Document {
-  userId: string;
+  openId: string;
   wordId: string;
   correctCount: number;
   status: LearnedStatus;
@@ -12,7 +12,7 @@ export interface IWordLearning extends Document {
 }
 
 const WordLearningSchema = new Schema({
-  userId: {
+  openId: {
     type: String,
     required: true
   },
@@ -37,7 +37,7 @@ const WordLearningSchema = new Schema({
 });
 
 // 复合索引：每个用户的每个单词只能有一条学习记录
-WordLearningSchema.index({ userId: 1, wordId: 1 }, { unique: true });
-WordLearningSchema.index({ userId: 1, status: 1 });
+WordLearningSchema.index({ openId: 1, wordId: 1 }, { unique: true });
+WordLearningSchema.index({ openId: 1, status: 1 });
 
 export default mongoose.model<IWordLearning>('WordLearning', WordLearningSchema); 

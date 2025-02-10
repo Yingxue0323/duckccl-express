@@ -1,14 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IRedeem extends Document {
-  _id: mongoose.Types.ObjectId;
-  inviterId: mongoose.Types.ObjectId; // 邀请者
+  inviterOpenId: string; // 邀请者
   code: string;               // 兑换码
   duration: number;           // VIP时长（天数）
 
   // 使用情况
   isUsed: boolean;           // 是否已使用
-  usedById?: mongoose.Types.ObjectId;  // 使用者
+  usedOpenId?: string;  // 使用者
   usedAt?: Date;             // 使用时间
   expiresAt: Date;           // 兑换码过期时间
   
@@ -17,9 +16,8 @@ export interface IRedeem extends Document {
 }
 
 const RedeemSchema = new Schema({
-  inviterId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+  inviterOpenId: {
+    type: String,
     required: true
   },
   code: {
@@ -44,9 +42,8 @@ const RedeemSchema = new Schema({
     type: Boolean,
     default: false
   },
-  usedById: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+  usedOpenId: {
+    type: String,
     sparse: true
   },
   usedAt: Date
@@ -55,6 +52,6 @@ const RedeemSchema = new Schema({
 });
 
 // 索引优化查询
-RedeemSchema.index({ usedById: 1, expiresAt: 1 }); 
+RedeemSchema.index({ usedOpenId: 1, expiresAt: 1 }); 
 
 export default mongoose.model<IRedeem>('Redeem', RedeemSchema);

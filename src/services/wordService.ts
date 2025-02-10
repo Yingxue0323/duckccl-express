@@ -25,16 +25,16 @@ class WordService {
  /**
   * 获取某个单词
   * @param {string} wordId - 单词ID
-  * @param {string} userId - 用户ID
+  * @param {string} openId - 用户ID
   * @returns {Promise<any>} 返回单词格式后的信息
   */
-  async getWordById(wordId: string, userId: string): Promise<any> {
+  async getWordById(wordId: string, openId: string): Promise<any> {
     const word = await Word.findById(wordId);
     if (!word) throw new Error('Word not found');
     // const audio = await getSignedUrl(word.audioUrl);
 
-    const isFavorite = await wordFavService.checkFavStatusByWordId(userId, wordId);
-    const learningStatus = await wordLearnService.checkStatus(userId, wordId);
+    const isFavorite = await wordFavService.checkFavStatusByWordId(openId, wordId);
+    const learningStatus = await wordLearnService.checkStatus(openId, wordId);
 
     return {
       wordId: word._id.toString(),

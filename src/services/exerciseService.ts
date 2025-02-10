@@ -42,10 +42,10 @@ class ExerciseService {
    * @param {string} userId - 用户ID
    * @returns {Promise<any>} 返回练习总数、已学数量、收藏数量和题目简要信息列表
    */
-  async getAllExercises(userId: string): Promise<{exerciseCount: number, learnedCount: number, 
+  async getAllExercises(openId: string): Promise<{exerciseCount: number, learnedCount: number, 
     favoriteCount: number, isUserVIP: boolean, exercises: { _id: string; seq: string; title: string; isVIPOnly: boolean; 
       category: Category; source: ExerciseSource; isLearned: boolean; isFavorite: boolean; }[]}> {
-    if (!userId) {
+    if (!openId) {
       throw new Error('User is required');
     }
     
@@ -55,9 +55,9 @@ class ExerciseService {
         .sort({ seq: 1 })
         .select('_id seq title category source isVIPOnly')
         .lean(),
-      exeLearnService.getAllLearnedExercises(userId), // 返回已学的exerciseId列表
-      exeFavService.getAllFavoriteExercises(userId), // 返回收藏的exerciseId列表
-      userService.checkVIPStatus(userId) // 用户是否为VIP
+      exeLearnService.getAllLearnedExercises(openId), // 返回已学的exerciseId列表
+      exeFavService.getAllFavoriteExercises(openId), // 返回收藏的exerciseId列表
+      userService.checkVIPStatus(openId) // 用户是否为VIP
     ]);
 
     // 转换为Map，方便查询
@@ -95,20 +95,20 @@ class ExerciseService {
   /**
    * 获取单个练习详情
    * @param {string} exerciseId - 练习ID
-   * @param {string} userId - 用户ID
+   * @param {string} openId - 用户ID
    * @returns {Promise<any>} 返回练习详情
    */
-  async getExerciseById(exerciseId: string, userId: string): Promise<{message: string, data: any}> {
-    if (!exerciseId || !userId) {
+  async getExerciseById(exerciseId: string, openId: string): Promise<{vipMsg: string, exercise: any}> {
+    if (!exerciseId || !openId) {
       throw new Error('Exercise ID and User ID are required');
     }
 
-    const isUserVIP = await userService.checkVIPStatus(userId);
+    const isUserVIP = await userService.checkVIPStatus(openId);
     const exercise = await Exercise.findById(exerciseId).lean();
     if (!exercise) throw new Error('Exercise not found');
 
-    const isLearned = await exeLearnService.checkStatus(userId, exerciseId);
-    const isFavorite = await exeFavService.checkFavStatusByExeId(userId, exerciseId);
+    const isLearned = await exeLearnService.checkStatus(openId, exerciseId);
+    const isFavorite = await exeFavService.checkFavStatusByExeId(openId, exerciseId);
     const dialogsWithIds = exercise.dialogs.map((dialog: any) => ({
       ...dialog,
       _id: dialog._id
@@ -117,8 +117,8 @@ class ExerciseService {
     // 如果是VIP内容但用户不是VIP
     if (exercise.isVIPOnly && !isUserVIP) {
       return {
-        message: 'VIP_REQUIRED',
-        data: {
+        vipMsg: 'VIP_REQUIRED',
+        exercise: {
           _id: exerciseId,
           seq: exercise.seq,
           title: exercise.title,
@@ -133,8 +133,8 @@ class ExerciseService {
     }
 
     return {
-      message: 'VIP_SUCCESS',
-      data: {
+      vipMsg: 'VIP_SUCCESS',
+      exercise: {
         ...exercise,
         isUserVIP: isUserVIP,
         isLearned: isLearned,

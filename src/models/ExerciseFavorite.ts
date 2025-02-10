@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExerciseFavorite extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: string;
+  openId: string;
   itemId: string;
   itemType: 'Exercise' | 'Audio';
 
@@ -11,7 +11,7 @@ export interface IExerciseFavorite extends Document {
 }
 
 const ExerciseFavoriteSchema = new Schema({
-  userId: {
+  openId: {
     type: String,
     required: true
   },
@@ -30,6 +30,6 @@ const ExerciseFavoriteSchema = new Schema({
 });
 
 // Compound Index: Each user cannot repeat collecting the same item
-ExerciseFavoriteSchema.index({ userId: 1, itemId: 1 }, { unique: true });
+ExerciseFavoriteSchema.index({ openId: 1, itemId: 1 }, { unique: true });
 
 export default mongoose.model<IExerciseFavorite>('ExerciseFavorite', ExerciseFavoriteSchema); 

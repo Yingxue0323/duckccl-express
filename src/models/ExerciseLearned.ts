@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExerciseLearned extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: string;
+  openId: string;
   exerciseId: string;
 
   createdAt: Date;
@@ -10,7 +10,7 @@ export interface IExerciseLearned extends Document {
 }
 
 const ExerciseLearnedSchema = new Schema({
-  userId: {
+  openId: {
     type: String,
     required: true
   },
@@ -24,6 +24,6 @@ const ExerciseLearnedSchema = new Schema({
 });
 
 // 复合索引：每个用户的每个练习只能有一条学习记录
-ExerciseLearnedSchema.index({ userId: 1, exerciseId: 1 }, { unique: true });
+ExerciseLearnedSchema.index({ openId: 1, exerciseId: 1 }, { unique: true });
 
 export default mongoose.model<IExerciseLearned>('ExerciseLearned', ExerciseLearnedSchema); 

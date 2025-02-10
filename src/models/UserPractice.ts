@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUserPractice extends Document {
-  userId: string;
+  openId: string;
   audioId: string;
   recordingUrl: string;           // 用户录制的音频
   duration: number;
@@ -11,7 +11,7 @@ export interface IUserPractice extends Document {
 }
 
 const UserPracticeSchema = new Schema({
-  userId: {
+  openId: {
     type: String,
     required: true
   },
@@ -33,6 +33,6 @@ const UserPracticeSchema = new Schema({
 });
 
 // 用户可以多次练习同一个对话
-UserPracticeSchema.index({ userId: 1, audioId: 1, createdAt: -1 });
+UserPracticeSchema.index({ openId: 1, audioId: 1, createdAt: -1 });
 
 export default mongoose.model<IUserPractice>('UserPractice', UserPracticeSchema); 

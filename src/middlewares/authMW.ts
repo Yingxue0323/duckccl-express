@@ -29,10 +29,10 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
     const decoded = verifyToken(token);
     
     // 3. 查找用户
-    const user = await userService.getUserById(decoded.userId);
+    const user = await userService.getUserByOpenid(decoded.openId);
     if (!user) {
-      logger.error(`${req.method} ${req.url} - 用户不存在`);
-      throw new AuthError('USER_NOT_FOUND', '用户不存在');
+      logger.error(`${req.method} ${req.url} - authMW: 用户不存在`);
+      throw new AuthError('USER_NOT_FOUND', 'authMW:用户不存在');
     }
 
     // 4. 检查用户 session 是否过期
@@ -43,11 +43,11 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
 
     // 将用户信息附加到请求对象
     req.user = user;
-    logger.info(`${req.method} ${req.url} - 认证成功`);
+    logger.info(`${req.method} ${req.url} - authMW: 认证成功`);
     next();
 
   } catch (error: any) {
-    logger.error(`${req.method} ${req.url} - 认证失败: ${error.message}`);
+    logger.error(`${req.method} ${req.url} - authMW: 认证失败: ${error.message}`);
     if (error instanceof AuthError) {
       return res.status(401).json({
         code: error.code,
@@ -56,7 +56,7 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
     }
     return res.status(401).json({
       code: 'AUTH_FAILED',
-      message: '认证失败'
+      message: 'authMW: 认证失败'
     });
   }
 };
@@ -68,8 +68,8 @@ export const adminMiddleware = async (req: ExpressRequest, res: Response, next: 
     const targetUserId = req.headers['x-target-user'] as string;  // 从header中获取目标用户ID
     
     if (adminKey !== config.adminSecretKey) {
-      logger.error(`${req.method} ${req.url} - 无管理员权限`);
-      throw new AuthError('NO_ADMIN_PERMISSION', '无管理员权限');
+      logger.error(`${req.method} ${req.url} - adminMW: 无管理员权限`);
+      throw new AuthError('NO_ADMIN_PERMISSION', 'adminMW:无管理员权限');
     }
 
     req.isAdmin = true;
@@ -80,7 +80,7 @@ export const adminMiddleware = async (req: ExpressRequest, res: Response, next: 
 
     next();
   } catch (error: any) {
-    logger.error(`${req.method} ${req.url} - 认证失败: ${error.message}`);
+    logger.error(`${req.method} ${req.url} - adminMW: ß认证失败: ${error.message}`);
     if (error instanceof AuthError) {
       return res.status(401).json({
         code: error.code,

@@ -1,0 +1,123 @@
+{
+  "seq": "BU001",
+  "title": "Seafood Export",
+  "category": "BUSINESS",
+  "source": "QUESTION_BANK",
+  "isVIPOnly": false,
+  "intro": {
+    "order": 0,
+    "text": "The following dialogue takes place between Mr. Smith, an Australian seafood exporter, and Mr. Chen, a Chinese seafood importer. Mr. Chen wants to order seafood from Australia. The dialogue starts now.",
+    "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/00.MP3 ",
+    "duration": 14.7
+    },
+  "dialogs": [
+    {
+      "order": 1,
+      "text": "Hello, Mr. Chen. I heard that you are here to talk about the policies regarding our seafood export.",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/01_en.MP3",
+      "duration": 7.73,
+      "trans": "您好，陈先生。我听说您是来就我们的海鲜出口政策进行洽谈的。",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/01_t_ch.MP3",
+      "trans_duration": 6.85
+    },
+    {
+      "order": 2,
+      "text": "你好，史密斯先生。你们公司是全澳洲最大的海鲜产品供应商，尤其是贝类产品。我听说你们质量最好的产品是龙虾和生蚝。",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/02_ch.MP3",
+      "duration": 12.92,
+      "trans": "Hello, Mr. Smith. Your company is the largest seafood provider in Australia, especially for shellfish. I heard your best products are lobster and oyster.",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/02_t_en.MP3",
+      "trans_duration": 10.0
+    },
+    {
+      "order": 3,
+      "text": "Mr Chen, you are spot on. We have the highest quality lobsters that are from Southeast Australia, and our oysters are from Tasmania.",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/03_en.MP3",
+      "duration": 9.5,
+      "trans": "陈先生，您说的太对了。我们的龙虾源自澳大利亚东南区，质量最高；我们的生蚝源自塔斯马尼亚。",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/03_t_ch.MP3",
+      "trans_duration": 7.88
+    },
+    {
+      "order": 4,
+      "text": "我们公司准备进口一些龙虾和生蚝。我们公司以前的海鲜都是从日本和南韩进口的，所以成本比较低。如果我们要从澳洲进口的话，运输成本会上升。",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/04_ch.MP3",
+      "duration": 14.7,
+      "trans": "Our company wants to import some lobsters and oysters. We used to import from Japan and South Korea, so the cost was low. The cost of transportation will rise if we import from Australia.",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/04_t_en.MP3",
+      "trans_duration": 10.85
+    },
+    {
+      "order": 5,
+      "text": "It is true, but we can adjust our prices to be competitive.",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/05_en.MP3",
+      "duration": 4.45,
+      "trans": "是这样的。但是我们可以把我们的价格调整得非常有竞争力。",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/05_t_ch.MP3",
+      "trans_duration": 5.6
+    },
+    {
+      "order": 6,
+      "text": "好的，你们龙虾的价格是多少？",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/06_ch.MP3",
+      "duration": 4.1,
+      "trans": "Okay. What's the price of your lobster?",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/06_t_en.MP3",
+      "trans_duration": 2.6
+    },
+    {
+      "order": 7,
+      "text": "During off-peak season, the lobsters are $65 per kilogram. During peak season, the amount of production is as twice as the amount in the off-peak season. So the price is $45 per kilogram.",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/07_en.MP3",
+      "duration": 14.8,
+      "trans": "在淡季的时候，龙虾的价格是每千克65 元。在旺季的时候产量是淡季的两倍，所以价格会是每千克45 元。",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/07_t_ch.MP3",
+      "trans_duration": 9.9
+    },
+    {
+      "order": 8,
+      "text": "这个价位我们是可以接受的。我们想要 3.5 吨的龙虾和1.7 吨的生蚝。你们可以稳定供货吗？",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/08_ch.MP3",
+      "duration": 9.6,
+      "trans": "We're okay with that price. We want 3.5 tons of lobster and 1.7 tons of oyster. Could you stabilize your supply?",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/08_t_en.MP3",
+      "trans_duration": 11.1
+    },
+    {
+      "order": 9,
+      "text": "Yes, we can, provided that there is notice in advance or there are no unexpected situations. Once the contract of sale is signed, the price will not fluctuate. Do you want to sign the contract today?",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/09_en.MP3",
+      "duration": 13.9,
+      "trans": "如果能提前通知我们，并且没有意外发生，我们是可以稳定供货的。一旦签了销售合同，价格就不会浮动了。您想今天签合同吗？",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/09_t_ch.MP3",
+      "trans_duration": 9.1
+    },
+    {
+      "order": 10,
+      "text": "今天做这个决定太仓促了。我还需要给我的合伙人打个电话。你介意带我参观一下你们的仓库吗？",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/10_ch.MP3",
+      "duration": 9.4,
+      "trans": "It's so hasty to make the decision today. I still need to call my partner. Could you show me around your warehouse?",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/10_t_en.MP3",
+      "trans_duration": 6.2
+    },
+    {
+      "order": 11,
+      "text": "Sure. Before we do that, do you mind if I give you some samples of our seafood?",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/11_en.MP3",
+      "duration": 6.23,
+      "trans": "当然可以。在我们去参观之前，您介意我给您一些我们海鲜产品的样品吗？",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/11_t_ch.MP3",
+      "trans_duration": 5.88
+    },
+    {
+      "order": 12,
+      "text": "当然。检验海鲜质量的最好办法就是品尝了。",
+      "url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/12_ch.MP3",
+      "duration": 5.6,
+      "trans": "Of course not. The best way to test seafood is to taste it.",
+      "trans_url": "https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/audios/Business/B001/12_t_en.MP3",
+      "trans_duration": 7.8
+    }
+  ]
+}

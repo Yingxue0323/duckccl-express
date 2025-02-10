@@ -70,8 +70,10 @@ jobs:
         # 设置权限
         chmod 600 /var/www/koala-ccl/.env
         chmod -R 755 /var/www/koala-ccl
-        echo "权限设置完成，开始重启应用🔄..."
+        echo "权限设置完成"
 
+        npm run sync:models
+        echo "模型同步完成，开始重启应用🔄..."
         
         if pm2 list | grep -q "koala"; then
           pm2 reload koala --update-env
