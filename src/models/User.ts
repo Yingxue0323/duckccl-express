@@ -25,8 +25,6 @@ export interface IUser extends Document {
   sessionKey?: string;        // 小程序登录凭证Only
   sessionExpireAt?: Date;    // 小程序登录凭证过期时间
   openId: string;           // 在小程序中的唯一标识
-  unionId?: string;           // 在微信开放平台中的唯一标识
-  email?: string;
   loginType: LoginType;
   lastLoginAt?: Date;
 
@@ -83,15 +81,6 @@ const UserSchema = new Schema({
   openId: { 
     type: String, 
     required: true, 
-    unique: true,
-    index: true
-  },
-  unionId: {
-    type: String,
-    unique: true
-  },
-  email: {
-    type: String,
     unique: true,
     index: true
   },
