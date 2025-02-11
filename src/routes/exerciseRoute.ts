@@ -9,6 +9,8 @@ const router = Router();
 // 基础curd
 router.post('/', authMiddleware, exerciseController.createExercise);    // 创建练习
 router.get('/', authMiddleware, exerciseController.getAllExercises); // 获取练习列表
+router.get('/categories', authMiddleware, exerciseController.getExerciseByCategories); // 获取分类练习列表
+
 router.get('/:id', authMiddleware, exerciseController.getExerciseById); // 获取单个练习详情
 router.patch('/:id', authMiddleware, exerciseController.updateExercise); // 更新练习
 router.delete('/:id', authMiddleware, exerciseController.deleteExercise); // 删除练习

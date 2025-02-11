@@ -93,6 +93,56 @@ class ExerciseService {
   }
 
   /**
+   * 获取分类练习列表
+   * @param {string} openId - 用户ID
+   * @param {string} category - 分类
+   * @returns {Promise<any>} 返回分类练习列表
+   */
+  async getExerciseByCategories(openId: string, category: string): Promise<any> {
+    if (!openId || !category) throw new Error('User ID and Category are required');
+
+    const [exercises, learnedList, favoritesList, isUserVIP] = await Promise.all([
+      Exercise.find({ category: category })
+        .sort({ seq: 1 })
+        .select('_id seq title category source isVIPOnly')
+        .lean(),
+      exeLearnService.getAllLearnedExercises(openId), // 返回已学的exerciseId列表
+      exeFavService.getAllFavoriteExercises(openId), // 返回收藏的exerciseId列表
+      userService.checkVIPStatus(openId) // 用户是否为VIP
+    ]);
+
+    const learnedMap = new Map(
+      learnedList.ids.map((itemId: string) => [itemId, true])
+    );
+    const favoriteMap = new Map(
+      favoritesList.ids.map((itemId: string) => [itemId, true]) // 使用 favorites.ids
+    );
+
+    const exerciseList = exercises.map((exercise: IExercise) => {
+      const exerciseId = exercise._id.toString();
+      return {
+        _id: exerciseId,
+        seq: exercise.seq,
+        title: exercise.title,
+        isVIPOnly: exercise.isVIPOnly,
+        category: exercise.category,
+        source: exercise.source,
+        isLearned: learnedMap.get(exerciseId) || false,
+        isFavorite: favoriteMap.get(exerciseId) || false
+      };
+    });
+
+    // 返回带统计值的
+    return {
+      category: category,
+      exerciseCount: exercises.length,
+      learnedCount: learnedList.count,
+      favoriteCount: favoritesList.count,
+      isUserVIP: isUserVIP,
+      exercises: exerciseList,
+    };
+  }
+  /**
    * 获取单个练习详情
    * @param {string} exerciseId - 练习ID
    * @param {string} openId - 用户ID

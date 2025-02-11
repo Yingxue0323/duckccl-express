@@ -48,6 +48,25 @@ class ExerciseController {
   }
 
   /**
+   * 获取分类练习列表
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回分类练习列表
+   */
+  async getExerciseByCategories(req: Request, res: Response) {
+    try {
+      const category = req.query.category as string;
+      const openId = req.user.openId;
+      const result = await exerciseService.getExerciseByCategories(openId, category);
+
+      logger.info(`获取分类练习列表成功: ${category}分类, ${result.exercises.length}个练习`);
+      return SuccessHandler(res, { result });
+    } catch (error: any) {
+      logger.error(`获取分类练习列表失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.GET_EXERCISE_BY_CATEGORIES_FAILED, error.message);
+    }
+  } 
+  /**
    * 获取单个练习详情
    * @param {Request} req - 请求对象
    * @param {Response} res - 响应对象
