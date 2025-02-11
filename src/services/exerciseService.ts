@@ -40,19 +40,28 @@ class ExerciseService {
   /**
    * 获取所有练习
    * @param {string} userId - 用户ID
+   * @param {number} page - 页码
+   * @param {number} pageSize - 每页数量
    * @returns {Promise<any>} 返回练习总数、已学数量、收藏数量和题目简要信息列表
    */
-  async getAllExercises(openId: string): Promise<{exerciseCount: number, learnedCount: number, 
+  async getAllExercises(openId: string, page: number = 1, pageSize: number = 25): Promise<{currentPage: number, totalPages: number, exerciseCount: number, learnedCount: number, 
     favoriteCount: number, isUserVIP: boolean, exercises: { _id: string; seq: string; title: string; isVIPOnly: boolean; 
       category: Category; source: ExerciseSource; isLearned: boolean; isFavorite: boolean; }[]}> {
     if (!openId) {
       throw new Error('User is required');
     }
     
+    if (page < 1) page = 1;
+    if (pageSize < 1) pageSize = 25;
+
+    // 计算跳过的记录数
+    const skip = (page - 1) * pageSize;
     // 并行异步
     const [exercises, learnedList, favoritesList, isUserVIP] = await Promise.all([
       Exercise.find()
         .sort({ seq: 1 })
+        .skip(skip)
+        .limit(pageSize)
         .select('_id seq title category source isVIPOnly')
         .lean(),
       exeLearnService.getAllLearnedExercises(openId), // 返回已学的exerciseId列表
@@ -84,6 +93,8 @@ class ExerciseService {
 
     // 返回带统计值的
     return {
+      currentPage: page,
+      totalPages: Math.ceil(exercises.length / pageSize),
       exerciseCount: exercises.length,
       learnedCount: learnedList.count,
       favoriteCount: favoritesList.count,
@@ -96,14 +107,24 @@ class ExerciseService {
    * 获取分类练习列表
    * @param {string} openId - 用户ID
    * @param {string} category - 分类
+   * @param {number} page - 页码
+   * @param {number} pageSize - 每页数量
    * @returns {Promise<any>} 返回分类练习列表
    */
-  async getExerciseByCategories(openId: string, category: string): Promise<any> {
+  async getExerciseByCategories(openId: string, category: string, page: number = 1, pageSize: number = 25): Promise<any> {
     if (!openId || !category) throw new Error('User ID and Category are required');
+
+    if (page < 1) page = 1;
+    if (pageSize < 1) pageSize = 25;
+
+    // 计算跳过的记录数
+    const skip = (page - 1) * pageSize;
 
     const [exercises, learnedList, favoritesList, isUserVIP] = await Promise.all([
       Exercise.find({ category: category })
         .sort({ seq: 1 })
+        .skip(skip)
+        .limit(pageSize)
         .select('_id seq title category source isVIPOnly')
         .lean(),
       exeLearnService.getAllLearnedExercises(openId), // 返回已学的exerciseId列表
@@ -135,6 +156,8 @@ class ExerciseService {
     // 返回带统计值的
     return {
       category: category,
+      currentPage: page,
+      totalPages: Math.ceil(exercises.length / pageSize),
       exerciseCount: exercises.length,
       learnedCount: learnedList.count,
       favoriteCount: favoritesList.count,

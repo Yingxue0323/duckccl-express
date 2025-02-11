@@ -36,9 +36,11 @@ class ExerciseController {
    */
   async getAllExercises(req: Request, res: Response) {
     try {
-      const result = await exerciseService.getAllExercises(req.user.openId);
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 25;
+      const result = await exerciseService.getAllExercises(req.user.openId, page, pageSize);
 
-      logger.info(`获取练习列表成功: ${result.exercises.length}个练习`);
+      logger.info(`获取练习列表成功: ${result.exerciseCount}个练习, 当前页: ${page}, 每页: ${pageSize}`);
       return SuccessHandler(res, { result });
 
     } catch (error: any) {
@@ -57,9 +59,11 @@ class ExerciseController {
     try {
       const category = req.query.category as string;
       const openId = req.user.openId;
-      const result = await exerciseService.getExerciseByCategories(openId, category);
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 25;
+      const result = await exerciseService.getExerciseByCategories(openId, category, page, pageSize);
 
-      logger.info(`获取分类练习列表成功: ${category}分类, ${result.exercises.length}个练习`);
+      logger.info(`获取分类练习列表成功: ${category}分类, ${result.exerciseCount}个练习, 当前页: ${page}, 每页: ${pageSize}`);
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`获取分类练习列表失败: ${JSON.stringify({ error: error.message })}`);
