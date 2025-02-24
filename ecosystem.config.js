@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     apps: [{
       name: 'koala',
       script: './dist/app.js',
