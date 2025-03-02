@@ -7,8 +7,9 @@
 # Node modules
 node_modules
 
-# sensitive files
+# sensitive & dev files
 files/
+scripts/
 
 # Build files
 dist/
