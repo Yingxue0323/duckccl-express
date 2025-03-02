@@ -138,27 +138,29 @@ class ExerciseService {
     if (!exerciseId || !openId) throw new Error('Exercise ID and User ID are required');
 
     // 1. 检查是否允许展示，如果不允许，则直接返回
-    const isUserVIP = await userService.checkVIPStatus(openId);
-    const exercise = await Exercise.findById(exerciseId).lean();
+    // const isUserVIP = await userService.checkVIPStatus(openId);
+    const exercise = await Exercise.findById(exerciseId)
+      .select('seq title category source')
+      .lean();
     if (!exercise) throw new Error('Exercise not found');
-    if (exercise.isVIPOnly && !isUserVIP){
-      return {  // details仍然展示，但是不寻找对应audios，直接返回
-        ...exercise,
-        can_show: false
-      };
-    }
+    // if (exercise.isVIPOnly && !isUserVIP){
+    //   return {  // details仍然展示，但是不寻找对应audios，直接返回
+    //     ...exercise,
+    //     // can_show: false
+    //   };
+    // }
 
     // 2. 允许展示，则寻找对应状态和该练习包含的audios
-    const [isExeLearned, isExeFavorite, audios] = await Promise.all([
-      exeLearnService.checkLearningStatus(openId, exerciseId),
+    const [isExeFavorite, audios] = await Promise.all([
+      // exeLearnService.checkLearningStatus(openId, exerciseId),
       exeFavService.checkFavStatus(openId, exerciseId),
       audioService.getAudiosByExerciseId(openId, exerciseId)
     ]);
 
     return {
-      is_exe_learned: isExeLearned,
+      // is_exe_learned: isExeLearned,
       is_exe_favorite: isExeFavorite,
-      can_show: true,
+      // can_show: true,
       ...exercise,
       audios: audios
     };

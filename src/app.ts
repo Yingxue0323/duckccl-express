@@ -14,17 +14,14 @@ const port = process.env.PORT || 3000;
 // 中间件
 app.use(express.json());
 
+// 静态文件服务
+app.use(express.static('src/public'));
+
 // 数据库连接
 connectDB();
 
 // 注册路由
 registerRoutes(app);
-
-// 日志
-app.get('/', (req, res) => {
-    logger.info('访问了首页路由');
-    res.send('Hello World!');
-});
 
 // 错误处理中间件
 app.use(errorHandler);

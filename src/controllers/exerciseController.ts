@@ -94,7 +94,7 @@ class ExerciseController {
       const openId = req.user.openId;
       const result = await exerciseService.getExerciseById(exerciseId, openId);
 
-      logger.info(`获取练习详情成功: ${result.exerciseId}`);
+      logger.info(`获取练习详情成功: ${exerciseId}`);
       return SuccessHandler(res, { result });
 
     } catch (error: any) {

@@ -5,6 +5,7 @@ import { CATEGORIES, Category,
   
 export interface IExercise extends Document {
   _id: mongoose.Types.ObjectId;
+  order: number;
   seq: string;
   title: string;
   category: Category;
@@ -42,9 +43,25 @@ const ExerciseSchema = new Schema({
     default: false,
     required: true,
     index: true
+  },
+  order: {
+    type: Number,
+    unique: true,
+    index: true
   }
 }, {
   timestamps: true 
+});
+
+// 添加 pre save 中间件来自动设置 order
+ExerciseSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    // 使用正确的类型转换
+    const Exercise = mongoose.model('Exercise');
+    const maxOrder = await Exercise.findOne().sort('-order');
+    this.order = maxOrder ? maxOrder.order + 1 : 1;
+  }
+  next();
 });
 
 export default mongoose.model<IExercise>('Exercise', ExerciseSchema);

@@ -8,7 +8,7 @@ const router = Router();
 router.get('/menus', authMiddleware, exerciseController.getMenus); //获取菜单项目
 
 // ----------------------------------------- 基础curd -----------------------------------------
-router.post('/', authMiddleware, exerciseController.createExercise);    // 创建练习, TODO: admin only
+router.post('/',  exerciseController.createExercise);    // 创建练习, TODO: admin only
 // 获取所有练习列表，支持分类多选和分页，eg./api/v1/exercises?category=business&category=law&...
 router.get('/', authMiddleware, exerciseController.getAllExercises);
 router.get('/:id', authMiddleware, exerciseController.getExerciseById); // 获取单个练习详情

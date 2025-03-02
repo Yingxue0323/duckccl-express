@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据上传工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .module {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .module h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 80%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        .uploaded {
+            background-color: #e6ffe6;
+        }
+        button {
+            padding: 5px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>CSV 数据上传工具</h2>
+        <div class="form-group">
+            <input type="file" id="csvFile" accept=".csv" />
+            <button onclick="handleFileSelect()">分析文件</button>
+        </div>
+        <div id="modules"></div>
+    </div>
+    <div class="progress" id="progress"></div>
+
+    <script>
+        let exercises = [];
+        let audioDurations = {};
+        let newExerciseId = null;  // 添加全局变量存储最新创建的练习ID
+        
+        // 初始化时清空显示区域
+        document.getElementById('modules').innerHTML = '';
+        document.getElementById('progress').innerHTML = '';
+
+        // 添加加载音频时长数据的函数
+        async function loadAudioDurations() {
+            try {
+                const response = await fetch('/audio_durations.json');
+                audioDurations = await response.json();
+            } catch (error) {
+                console.error('加载音频时长数据失败:', error);
+            }
+        }
+
+        async function handleFileSelect() {
+            await loadAudioDurations();  // 在解析文件前先加载时长数据
+            
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const rows = text.split('\n');
+                exercises = parseCSV(rows);
+                if (exercises.length > 0) {
+                    displayExercise(0);
+                } else {
+                    alert('没有找到有效的练习数据');
+                }
+            } catch (error) {
+                alert(`解析错误：${error.message}`);
+            }
+        }
+
+        function generateAudioUrl(seq, order, language, isTrans = false) {
+            const baseUrl = 'https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/exercises/';
+            
+            // 处理 Brief (00) 音频的特殊情况
+            if (order === '00') {
+                return `${baseUrl}${seq}_00_EN.m4a`;
+            }
+            
+            // 构建文件名
+            let fileName = `${seq}_${order}`;
+            
+            if (isTrans) {
+                fileName += '_T';
+            }
+            
+            fileName += `_${language.toUpperCase()}.m4a`;
+            
+            return baseUrl + fileName;
+        }
+
+        function getDuration(seq, order, language, isTrans = false) {
+            let key = `${seq}_${order}`;
+            
+            // intro 音频总是 EN
+            if (order === '00') {
+                key += '_EN';
+            } else {
+                key += isTrans ? `_T_${language}` : `_${language}`;
+            }
+            
+            return audioDurations[key] || 0;
+        }
+
+        function parseCSV(rows) {
+            let exercises = [];
+            let currentExercise = null;
+            let currentAudios = [];
+            
+            for (let row of rows) {
+                row = row.trim();
+                if (!row || row === ',,,') continue;
+                
+                if (row.includes('_QuestionBank_')) {
+                    if (currentExercise && currentAudios.length > 0) {
+                        currentExercise.audios = currentAudios;
+                        exercises.push(currentExercise);
+                    }
+                    
+                    const fullRow = row.split(',')[0];
+                    const parts = fullRow.split('_');
+                    
+                    if (parts.length >= 5) {
+                        currentExercise = {
+                            seq: (parts[0] || '').toUpperCase(),
+                            title: parts[1] || '',
+                            category: (parts[2] || '').toUpperCase(),
+                            source: (parts[3] || '').toUpperCase() === 'QUESTIONBANK' ? 'QUESTION_BANK' : 'EXAM_RECALL',
+                            isVIPOnly: (parts[4] || '').toLowerCase() === 'true',
+                            uploaded: false,
+                            _id: null,
+                            order: null
+                        };
+                        currentAudios = [];
+                    } else {
+                        console.error('Invalid exercise row format:', row);
+                    }
+                    continue;
+                }
+
+                // 解析音频行
+                if (currentExercise) {
+                    // 使用正则表达式匹配三重引号包裹的内容，同时处理可能没有trans_text的情况
+                    const matches = row.match(/([^,]+),([^,]+),"""([^"]*)""",?(?:"""([^"]*)""")?/);
+                    if (matches) {
+                        const [_, orderNum, langType, text, trans_text] = matches;
+                        const order = orderNum.trim();
+                        
+                        // 检查是否是 Brief 行
+                        if (order === '00' || order === '0') {
+                            const audio = {
+                                order: 0,  // 使用数字 0 而不是字符串 '00'
+                                language: 'EN',
+                                text: text.trim(),
+                                url: generateAudioUrl(currentExercise.seq, '00', 'EN'),
+                                duration: getDuration(currentExercise.seq, '00', 'EN'),
+                                uploaded: false
+                            };
+                            currentAudios.push(audio);
+                        } else {
+                            // 普通对话行
+                            const audio = {
+                                order: parseInt(order),  // 将order转换为数字
+                                language: langType.trim() === 'E.C' ? 'EN' : 'CH',
+                                text: text.trim(),
+                                url: generateAudioUrl(currentExercise.seq, order, langType.trim() === 'E.C' ? 'EN' : 'CH'),
+                                duration: getDuration(currentExercise.seq, order, langType.trim() === 'E.C' ? 'EN' : 'CH'),
+                                trans_text: trans_text ? trans_text.trim() : '',
+                                trans_url: generateAudioUrl(currentExercise.seq, order, langType.trim() === 'E.C' ? 'CH' : 'EN', true),
+                                trans_duration: getDuration(currentExercise.seq, order, langType.trim() === 'E.C' ? 'CH' : 'EN', true),
+                                uploaded: false
+                            };
+                            currentAudios.push(audio);
+                        }
+                    }
+                }
+            }
+            
+            if (currentExercise && currentAudios.length > 0) {
+                currentExercise.audios = currentAudios;
+                exercises.push(currentExercise);
+            }
+            
+            return exercises;
+        }
+
+        function displayExercise(index) {
+            const modulesDiv = document.getElementById('modules');
+            const progressDiv = document.getElementById('progress');
+            modulesDiv.innerHTML = '';
+            
+            if (index >= exercises.length) {
+                progressDiv.innerHTML = '所有练习已处理完成';
+                return;
+            }
+            
+            const exercise = exercises[index];
+            progressDiv.innerHTML = `当前处理第 ${index + 1} 个练习，共 ${exercises.length} 个`;
+            
+            // 顶部导航按钮
+            const topNavButtons = document.createElement('div');
+            topNavButtons.className = 'module';
+            topNavButtons.innerHTML = `
+                <button onclick="navigateExercise(${index - 1})" ${index === 0 ? 'disabled' : ''}>上一个练习</button>
+                <button onclick="navigateExercise(${index + 1})" ${index === exercises.length - 1 ? 'disabled' : ''}>下一个练习</button>
+            `;
+            modulesDiv.appendChild(topNavButtons);
+            
+            // Exercise Module
+            const exerciseModule = document.createElement('div');
+            exerciseModule.className = `module ${exercise.uploaded ? 'uploaded' : ''}`;
+            exerciseModule.innerHTML = `
+                <h3>练习信息</h3>
+                ${exercise._id ? `
+                <div class="form-group success">
+                    <label>练习ID:</label>
+                    <input type="text" value="${exercise._id}" readonly>
+                    <span class="success"> ✅ </span>
+                </div>
+                <div class="form-group">
+                    <label>序号:</label>
+                    <input type="text" value="${exercise.order || '未创建'}" readonly>
+                </div>
+                ` : ''}
+                <div class="form-group">
+                    <label>标题:</label>
+                    <input type="text" id="title" value="${exercise.title}">
+                </div>
+                <div class="form-group">
+                    <label>分类:</label>
+                    <input type="text" id="category" value="${exercise.category}">
+                </div>
+                <div class="form-group">
+                    <label>来源:</label>
+                    <input type="text" id="source" value="${exercise.source}">
+                </div>
+                <div class="form-group">
+                    <label>仅VIP:</label>
+                    <input type="text" id="isVIPOnly" value="${exercise.isVIPOnly}">
+                </div>
+                <button onclick="uploadExercise(${index})" ${exercise.uploaded ? 'disabled' : ''}>
+                    ${exercise.uploaded ? '已上传' : '上传练习'}
+                </button>
+            `;
+            modulesDiv.appendChild(exerciseModule);
+            
+            // Audio Modules
+            // 首先显示 Brief (如果存在)
+            const briefAudio = exercise.audios.find(audio => audio.order == 0);
+            if (briefAudio) {
+                const briefIndex = exercise.audios.findIndex(audio => audio.order == 0);  // 获取 Brief 的实际索引
+                const briefModule = document.createElement('div');
+                briefModule.className = `module ${briefAudio.uploaded ? 'uploaded' : ''}`;
+                briefModule.innerHTML = `
+                    <h3>Brief</h3>
+                    <div class="form-group">
+                        <label>练习ID:</label>
+                        <input type="text" id="exercise_id_${briefIndex}" value="${newExerciseId || exercise._id || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>序号:</label>
+                        <input type="text" id="audio_order_${briefIndex}" value="${briefAudio.order}">
+                    </div>
+                    <div class="form-group">
+                        <label>语言:</label>
+                        <input type="text" id="audio_language_${briefIndex}" value="${briefAudio.language}">
+                    </div>
+                    <div class="form-group">
+                        <label>文本:</label>
+                        <textarea id="audio_text_${briefIndex}">${briefAudio.text}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>链接:</label>
+                        <input type="text" id="audio_url_${briefIndex}" value="${briefAudio.url}">
+                    </div>
+                    <div class="form-group">
+                        <label>时长:</label>
+                        <input type="number" id="audio_duration_${briefIndex}" value="${briefAudio.duration}">
+                    </div>
+                    <button onclick="uploadAudio(${index}, ${briefIndex})" ${briefAudio.uploaded ? 'disabled' : ''}>
+                        ${briefAudio.uploaded ? '已上传' : '上传音频'}
+                    </button>
+                `;
+                modulesDiv.appendChild(briefModule);
+            }
+
+            // 然后显示其他对话音频
+            exercise.audios
+                .filter(audio => audio.order != 0)
+                .forEach((audio) => {
+                    const audioIndex = exercise.audios.findIndex(a => a.order === audio.order);  // 获取在原数组中的索引
+                    const audioModule = document.createElement('div');
+                    audioModule.className = `module ${audio.uploaded ? 'uploaded' : ''}`;
+                    audioModule.innerHTML = `
+                        <h3>音频 ${audio.order}</h3>
+                        <div class="form-group">
+                            <label>练习ID:</label>
+                            <input type="text" id="exercise_id_${audioIndex}" value="${newExerciseId || exercise._id || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>序号:</label>
+                            <input type="text" id="audio_order_${audioIndex}" value="${audio.order}">
+                        </div>
+                        <div class="form-group">
+                            <label>语言:</label>
+                            <input type="text" id="audio_language_${audioIndex}" value="${audio.language}">
+                        </div>
+                        <div class="form-group">
+                            <label>原文:</label>
+                            <textarea id="audio_text_${audioIndex}">${audio.text}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>链接:</label>
+                            <input type="text" id="audio_url_${audioIndex}" value="${audio.url}">
+                        </div>
+                        <div class="form-group">
+                            <label>时长:</label>
+                            <input type="number" id="audio_duration_${audioIndex}" value="${audio.duration}">
+                        </div>
+                        <div class="form-group">
+                            <label>译文文本:</label>
+                            <textarea id="audio_trans_text_${audioIndex}">${audio.trans_text}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>译文链接:</label>
+                            <input type="text" id="audio_trans_url_${audioIndex}" value="${audio.trans_url}">
+                        </div>
+                        <div class="form-group">
+                            <label>译文时长:</label>
+                            <input type="number" id="audio_trans_duration_${audioIndex}" value="${audio.trans_duration}">
+                        </div>
+                        <button onclick="uploadAudio(${index}, ${audioIndex})" ${audio.uploaded ? 'disabled' : ''}>
+                            ${audio.uploaded ? '已上传' : '上传音频'}
+                        </button>
+                    `;
+                    modulesDiv.appendChild(audioModule);
+                });
+            
+            // 底部导航按钮
+            const bottomNavButtons = document.createElement('div');
+            bottomNavButtons.className = 'module';
+            bottomNavButtons.innerHTML = `
+                <button onclick="navigateExercise(${index - 1})" ${index === 0 ? 'disabled' : ''}>上一个练习</button>
+                <button onclick="uploadAllAudios(${index})" ${!exercise.uploaded ? 'disabled' : ''}>
+                    批量上传音频
+                </button>
+                <button onclick="navigateExercise(${index + 1})" ${index === exercises.length - 1 ? 'disabled' : ''}>下一个练习</button>
+            `;
+            modulesDiv.appendChild(bottomNavButtons);
+        }
+
+        // 添加新的导航函数
+        function navigateExercise(index) {
+            displayExercise(index);
+            // 滚动到页面顶部
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        async function uploadExercise(index) {
+            const exercise = exercises[index];
+            const exerciseData = {
+                seq: exercise.seq,
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value.toUpperCase(),
+                source: exercise.source,
+                isVIPOnly: exercise.isVIPOnly
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/exercises', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(exerciseData)
+                });
+
+                const result = await response.json();
+                // alert(JSON.stringify(result, null, 2));  // 显示完整返回信息
+
+                if (result.code != 20000) {
+                    throw new Error(result.message || '上传失败');
+                }
+
+                exercises[index].uploaded = true;
+                exercises[index]._id = result.data.newExercise._id;
+                exercises[index].order = result.data.newExercise.order;  // 保存 order
+                newExerciseId = result.data.newExercise._id;
+                displayExercise(index);
+            } catch (error) {
+                alert(`上传失败：${error.message}`);
+            }
+        }
+
+        async function uploadAudio(exerciseIndex, audioIndex) {
+            const exerciseId = newExerciseId;
+            
+            if (!exerciseId) {
+                alert('请先上传练习');
+                return;
+            }
+
+            const audio = exercises[exerciseIndex].audios[audioIndex];
+            
+            const audioData = {
+                exerciseId: exerciseId,
+                order: parseInt(document.getElementById(`audio_order_${audioIndex}`).value),
+                language: document.getElementById(`audio_language_${audioIndex}`).value,
+                text: document.getElementById(`audio_text_${audioIndex}`).value.trim(),
+                url: document.getElementById(`audio_url_${audioIndex}`).value.trim(),
+                duration: parseFloat(document.getElementById(`audio_duration_${audioIndex}`).value) || 0
+            };
+
+            // 只有非 Brief 音频才有译文
+            if (audio.order !== 0) {
+                audioData.trans_text = document.getElementById(`audio_trans_text_${audioIndex}`).value.trim();
+                audioData.trans_url = document.getElementById(`audio_trans_url_${audioIndex}`).value.trim();
+                audioData.trans_duration = parseFloat(document.getElementById(`audio_trans_duration_${audioIndex}`).value) || 0;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/audios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(audioData)
+                });
+
+                const result = await response.json();
+                if (result.code != 20000) throw new Error(result.message || '上传失败');
+
+                exercises[exerciseIndex].audios[audioIndex].uploaded = true;
+                displayExercise(exerciseIndex);
+            } catch (error) {
+                alert(`上传失败：${error.message}`);
+            }
+        }
+
+        // 添加批量上传音频的函数
+        async function uploadAllAudios(exerciseIndex) {
+            const exerciseId = newExerciseId;
+            
+            if (!exerciseId) {
+                alert('请先上传练习');
+                return;
+            }
+
+            const audios = exercises[exerciseIndex].audios;
+            const totalAudios = audios.length;
+            let successCount = 0;
+
+            // 更新进度显示
+            const progressDiv = document.getElementById('progress');
+            
+            for (let i = 0; i < audios.length; i++) {
+                const audio = audios[i];
+                if (audio.uploaded) {
+                    successCount++;
+                    continue;  // 跳过已上传的音频
+                }
+
+                const audioIndex = i;
+                progressDiv.innerHTML = `正在上传第 ${i + 1}/${totalAudios} 个音频...`;
+
+                const audioData = {
+                    exerciseId: exerciseId,
+                    order: parseInt(document.getElementById(`audio_order_${audioIndex}`).value),
+                    language: document.getElementById(`audio_language_${audioIndex}`).value,
+                    text: document.getElementById(`audio_text_${audioIndex}`).value.trim(),
+                    url: document.getElementById(`audio_url_${audioIndex}`).value.trim(),
+                    duration: parseFloat(document.getElementById(`audio_duration_${audioIndex}`).value) || 0
+                };
+
+                // 只有非 Brief 音频才有译文
+                if (audio.order !== 0) {
+                    audioData.trans_text = document.getElementById(`audio_trans_text_${audioIndex}`).value.trim();
+                    audioData.trans_url = document.getElementById(`audio_trans_url_${audioIndex}`).value.trim();
+                    audioData.trans_duration = parseFloat(document.getElementById(`audio_trans_duration_${audioIndex}`).value) || 0;
+                }
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/v1/audios', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(audioData)
+                    });
+
+                    const result = await response.json();
+                    if (result.code != 20000) throw new Error(result.message || '上传失败');
+
+                    exercises[exerciseIndex].audios[audioIndex].uploaded = true;
+                    successCount++;
+                } catch (error) {
+                    alert(`上传第 ${i + 1} 个音频失败：${error.message}`);
+                    break;  // 遇到错误时停止上传
+                }
+            }
+
+            progressDiv.innerHTML = `音频上传完成：${successCount}/${totalAudios}`;
+            displayExercise(exerciseIndex);
+        }
+    </script>
+</body>
+</html> 

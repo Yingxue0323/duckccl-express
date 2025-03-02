@@ -7,6 +7,9 @@
 # Node modules
 node_modules
 
+# sensitive files
+files/
+
 # Build files
 dist/
 logs/

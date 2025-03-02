@@ -1,20 +1,7 @@
 import Audio, { IAudio } from '../models/Audio';
 import { userService } from './userService';
 import { audioFavService } from './audioFavService';
-import logger from '../utils/logger';
-import { Response } from 'express';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { Readable } from 'stream';
-import { config } from '../configs';
 import Exercise from '../models/Exercise';
-
-const s3Client = new S3Client({
-  region: config.s3.region || 'ap-southeast-2',
-  credentials: {
-    accessKeyId: config.aws.accessKey || '',
-    secretAccessKey: config.aws.secretAccessKey || ''
-  }
-});
 
 class AudioService {
 
@@ -106,7 +93,10 @@ class AudioService {
     if (!openId || !exerciseId) throw new Error('User open ID and Exercise ID are required');
 
     // 1. 获取当前练习中所有音频(已经过vip筛选)
-    const audios = await Audio.find({ exerciseId }).lean();
+    const audios = await Audio.find({ exerciseId })
+      .sort({ order: 1 })
+      .select('order language text url duration trans_text trans_url trans_duration')
+      .lean();
     if (!audios) throw new Error('Audios not found');
 
     // 2. 获取当前练习中所有已收藏的audio的id集合
@@ -114,14 +104,21 @@ class AudioService {
     const favoriteAudios = await audioFavService.getFavoriteAudiosByIds(openId, audioIds);
     const favoriteAudioSet = new Set(favoriteAudios);
 
-    // 3. 处理audio列表，添加属性
-    const audioList = audios.map(audio => ({
-      ...audio,
-      is_audio_favorite: favoriteAudioSet.has(audio._id.toString()),
-      can_play: true
-    }));
+    // 3. 处理audio列表，添加属性并移除order
+    const audioList = audios.map(audio => {
+      const { order, ...audioWithoutOrder } = {
+        ...audio,
+        is_audio_favorite: favoriteAudioSet.has(audio._id.toString())
+      };
+      return audioWithoutOrder;
+    });
 
-    return audioList;
+    const formattedAudios = {
+      intro: audioList.find((_, index) => audios[index].order === 0),
+      dialogs: audioList.filter((_, index) => audios[index].order !== 0)
+    };
+
+    return formattedAudios;
   }
 
   /**
@@ -187,46 +184,6 @@ class AudioService {
     const deletedAudio = await Audio.findByIdAndDelete(audioId);
     if (!deletedAudio) throw new Error('Audio not found');
     return true;
-  }
-
-  /**
-   * 获取音频文件并流式传输给前端
-   */
-  async streamAudio(url: string, res: Response) {
-    try {
-      logger.info(`开始流式传输音频`);
-
-      // 从 URL 解析出 bucket 和 key
-      const s3Url = new URL(url);
-      const bucket = s3Url.hostname.split('.')[0];
-      const key = decodeURIComponent(s3Url.pathname.substring(1)); // 移除开头的 '/'
-
-      logger.info(`Accessing S3: bucket=${bucket}, key=${key}`);
-
-      const command = new GetObjectCommand({
-        Bucket: bucket,
-        Key: key
-      });
-
-      const s3Response = await s3Client.send(command);
-      
-      if (!s3Response.Body) {
-        throw new Error('No response body from S3');
-      }
-      
-      res.setHeader('Content-Type', s3Response.ContentType || 'audio/mpeg');
-      if (s3Response.ContentLength) {
-        res.setHeader('Content-Length', s3Response.ContentLength);
-      }
-      res.setHeader('Accept-Ranges', 'bytes');
-
-      const stream = s3Response.Body as Readable;
-      return stream.pipe(res);
-
-    } catch (error: any) {
-      logger.error(`流式传输音频失败: ${error}`);
-      throw new Error(`音频流式传输失败: ${JSON.stringify({ error: error.message })}`);
-    }
   }
 }
 
