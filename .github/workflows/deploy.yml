@@ -41,8 +41,8 @@ jobs:
         # 首次创建目录
         sudo mkdir -p /var/www/koala-ccl
 
-        # 编译ts
-        npm run build
+        # 编译ts by swc
+        npx swc src -d dist
         echo "编译完成，开始构建🏠..."
 
          # 只同步变化的文件
