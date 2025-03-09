@@ -3,19 +3,6 @@ import { audioService } from './audioService';
 import { exeLearnService } from './exeLearnService';
 import { exeFavService } from './exeFavService';
 import { userService } from './userService';
-import logger from '../utils/logger';
-import { Response } from 'express';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { Readable } from 'stream';
-import { config } from '../configs';
-
-const s3Client = new S3Client({
-  region: config.s3.region || 'ap-southeast-2',
-  credentials: {
-    accessKeyId: config.aws.accessKey || '',
-    secretAccessKey: config.aws.secretAccessKey || ''
-  }
-});
 
 class ExerciseService {
   /**
@@ -151,14 +138,14 @@ class ExerciseService {
     // }
 
     // 2. 允许展示，则寻找对应状态和该练习包含的audios
-    const [isExeFavorite, audios] = await Promise.all([
-      // exeLearnService.checkLearningStatus(openId, exerciseId),
+    const [isExeLearned, isExeFavorite, audios] = await Promise.all([
+      exeLearnService.checkLearningStatus(openId, exerciseId),
       exeFavService.checkFavStatus(openId, exerciseId),
       audioService.getAudiosByExerciseId(openId, exerciseId)
     ]);
 
     return {
-      // is_exe_learned: isExeLearned,
+      is_exe_learned: isExeLearned,
       is_exe_favorite: isExeFavorite,
       // can_show: true,
       ...exercise,

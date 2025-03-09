@@ -1,0 +1,51 @@
+<button type="button" class="btn btn-primary" onclick="uploadExercise()">上传练习</button>
+<button type="button" class="btn btn-info" onclick="checkExercise()">检查</button>
+
+<script>
+function checkExercise() {
+  const dialogues = document.querySelectorAll('.dialogue-row');
+  let errors = [];
+  
+  dialogues.forEach((dialogue, index) => {
+    const dialogueNumber = dialogue.querySelector('input[name="dialogue_number[]"]').value;
+    const isZeroDialogue = dialogueNumber === '00';
+    
+    // 获取所有需要检查的字段
+    const language = dialogue.querySelector('select[name="language[]"]').value;
+    const originalText = dialogue.querySelector('textarea[name="original_text[]"]').value.trim();
+    const originalUrl = dialogue.querySelector('input[name="original_url[]"]').value.trim();
+    const originalDuration = dialogue.querySelector('input[name="original_duration[]"]').value.trim();
+    const translatedText = dialogue.querySelector('textarea[name="translated_text[]"]').value.trim();
+    const translatedUrl = dialogue.querySelector('input[name="translated_url[]"]').value.trim();
+    const translatedDuration = dialogue.querySelector('input[name="translated_duration[]"]').value.trim();
+    
+    // 检查字段
+    if (!isZeroDialogue) {
+      // 非00号对话检查所有字段
+      if (!language) errors.push(`对话${dialogueNumber}: 语言未选择`);
+      if (!originalText) errors.push(`对话${dialogueNumber}: 原文为空`);
+      if (!originalUrl) errors.push(`对话${dialogueNumber}: 原文链接为空`);
+      if (!originalDuration || originalDuration === '0') errors.push(`对话${dialogueNumber}: 原文时长无效`);
+      if (!translatedText) errors.push(`对话${dialogueNumber}: 译文为空`);
+      if (!translatedUrl) errors.push(`对话${dialogueNumber}: 译文链接为空`);
+      if (!translatedDuration || translatedDuration === '0') errors.push(`对话${dialogueNumber}: 译文时长无效`);
+    } else {
+      // 00号对话只检查原文相关字段
+      if (!originalText) errors.push(`对话${dialogueNumber}: 原文为空`);
+      if (!originalUrl) errors.push(`对话${dialogueNumber}: 原文链接为空`);
+      if (!originalDuration || originalDuration === '0') errors.push(`对话${dialogueNumber}: 原文时长无效`);
+    }
+  });
+  
+  if (errors.length > 0) {
+    // 如果有错误，显示错误信息
+    alert('检查发现以下问题：\n' + errors.join('\n'));
+  } else {
+    // 检查通过，滚动到底部的批量上传按钮
+    const uploadButton = document.querySelector('#batch-upload-button');
+    if (uploadButton) {
+      uploadButton.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}
+</script> 

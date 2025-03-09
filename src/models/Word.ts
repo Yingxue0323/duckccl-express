@@ -1,59 +1,49 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { LANGUAGES, LanguageCode, 
-          CATEGORIES, Category } from '../utils/constants';
-
-interface Translation {
-  language: LanguageCode;
-  text: string;
-  audioUrl: string;
-}
-
-const TranslationSchema = new Schema({
-  language: {
-    type: String,
-    enum: Object.values(LANGUAGES),
-    required: true
-  },
-  text: {
-    type: String,
-    required: true
-  },
-  audioUrl: {
-    type: String,
-    required: true
-  }
-}, { _id: false });
+import { CATEGORIES, Category } from '../utils/constants';
 
 export interface IWord extends Document {
-  _id: mongoose.Types.ObjectId;
-  word: string;
-  audioUrl: string;
-  translations: Map<LanguageCode, Translation>;
+  sequence: number; // 全局唯一
   category: Category;
+  order: number;
+
+  word: string;
+  url: string;
+  translation: string;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
 const WordSchema = new Schema({
-  word: {
-    type: String,
+  sequence: {
+    type: Number,
     required: true,
-    unique: true
-  },
-  audioUrl: {
-    type: String,
-    required: true
-  },
-  translations: {
-    type: Map,
-    of: TranslationSchema
+    unique: true,
+    index: true
   },
   category: {
     type: String,
     enum: Object.values(CATEGORIES),
     required: true,
     index: true
+  },
+  order: {
+    type: Number,
+    required: true
+  },
+  word: {
+    type: String,
+    unique: true,
+    index: true,
+    required: true
+  },
+  url: {
+    type: String,
+    required: true
+  },
+  translation: {
+    type: String,
+    required: true
   }
 }, {
   timestamps: true

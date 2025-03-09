@@ -4,6 +4,7 @@ import { LEARNED_STATUS, LearnedStatus } from '../utils/constants';
 export interface IWordLearning extends Document {
   openId: string;
   wordId: string;
+
   correctCount: number;
   status: LearnedStatus;
 
@@ -24,7 +25,7 @@ const WordLearningSchema = new Schema({
     type: Number,
     default: 0,
     min: 0,
-    max: 21
+    max: 5
   },
   status: {
     type: String,

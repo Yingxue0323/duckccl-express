@@ -102,17 +102,24 @@ export enum ResponseCode {
   UPDATE_USER_FAILED = 41006,
   DELETE_USER_FAILED = 41007,
 
-  // 单词相关 (42xxx)
+  // 单词相关（42xxx）
+  GET_WORD_MENUS_FAILED = 42000,
   WORD_NOT_FOUND = 42001,
   CREATE_WORD_FAILED = 42002,
   GET_ALL_WORDS_FAILED = 42003,
-  GET_WORD_BY_ID_FAILED = 42004,
-  UPDATE_WORD_FAILED = 42005,
-  DELETE_WORD_FAILED = 42006,
-  UPDATE_LEARNING_STATUS_FAILED = 42007,
+  GET_WORD_BY_CATEGORIES_FAILED = 42004,
+  GET_WORD_BY_ID_FAILED = 42005,
+  UPDATE_WORD_FAILED = 42006,
+  DELETE_WORD_FAILED = 42007,
+
+  // 单词学习状态相关 (42008-42010)
   GET_WORD_LEARNING_STATUS_FAILED = 42008,
-  UPDATE_FAVORITE_STATUS_FAILED = 42009,
-  GET_FAVORITE_WORD_STATUS_FAILED = 42010,
+  UPDATE_WORD_LEARNING_STATUS_FAILED = 42009,
+
+  // 单词收藏状态相关 (42011-42013)
+  FAVORITE_WORD_FAILED = 42011,
+  UNFAVORITE_WORD_FAILED = 42012,
+  GET_WORD_FAV_STATUS_FAILED = 42013,
 
   // 练习相关 (43xxx)
   GET_MENUS_FAILED = 43000,
@@ -182,16 +189,19 @@ export const ErrorMessages: Record<ResponseCode, string> = {
   [ResponseCode.DELETE_USER_FAILED]: '删除用户失败',
 
   // 单词相关
+  [ResponseCode.GET_WORD_MENUS_FAILED]: '获取单词菜单失败',
   [ResponseCode.WORD_NOT_FOUND]: '单词不存在',
   [ResponseCode.CREATE_WORD_FAILED]: '创建单词失败',
   [ResponseCode.GET_ALL_WORDS_FAILED]: '获取所有单词失败',
+  [ResponseCode.GET_WORD_BY_CATEGORIES_FAILED]: '获取分类单词失败',
   [ResponseCode.GET_WORD_BY_ID_FAILED]: '获取单词详情失败',
   [ResponseCode.UPDATE_WORD_FAILED]: '更新单词失败',
   [ResponseCode.DELETE_WORD_FAILED]: '删除单词失败',
-  [ResponseCode.GET_WORD_LEARNING_STATUS_FAILED]: '获取单词学习状态失败',
-  [ResponseCode.UPDATE_LEARNING_STATUS_FAILED]: '更新学习状态失败',
-  [ResponseCode.GET_FAVORITE_WORD_STATUS_FAILED]: '获取单词收藏状态失败',
-  [ResponseCode.UPDATE_FAVORITE_STATUS_FAILED]: '更新收藏状态失败',
+  [ResponseCode.GET_WORD_LEARNING_STATUS_FAILED]: '获取学习状态失败',
+  [ResponseCode.UPDATE_WORD_LEARNING_STATUS_FAILED]: '标为已学失败',
+  [ResponseCode.FAVORITE_WORD_FAILED]: '收藏单词失败',
+  [ResponseCode.UNFAVORITE_WORD_FAILED]: '取消收藏单词失败',
+  [ResponseCode.GET_WORD_FAV_STATUS_FAILED]: '获取单词收藏状态失败',
 
   // 练习相关
   [ResponseCode.GET_MENUS_FAILED]: '获取菜单失败',

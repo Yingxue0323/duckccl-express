@@ -41,6 +41,7 @@ class AudioService {
         .sort({ createdAt: -1 }) // 按收藏时间降序排序
         .skip(skip)
         .limit(page_size)
+        .select('exerciseId order language text url trans_text trans_url')
         .lean(),
       audioFavService.getAllFavoriteAudios(openId), // 返回收藏的audioId列表
       userService.checkVIPStatus(openId),
@@ -95,7 +96,7 @@ class AudioService {
     // 1. 获取当前练习中所有音频(已经过vip筛选)
     const audios = await Audio.find({ exerciseId })
       .sort({ order: 1 })
-      .select('order language text url duration trans_text trans_url trans_duration')
+      .select('order language text url trans_text trans_url')
       .lean();
     if (!audios) throw new Error('Audios not found');
 
@@ -122,6 +123,7 @@ class AudioService {
   }
 
   /**
+   * 管理员测试url用，暂无实际应用场景
    * 获取单个音频详情, use profile -> favorite audios -> audio 进入，无需vip check
    * @param {string} audioId - 音频ID
    * @param {string} openId - 用户ID
@@ -143,23 +145,19 @@ class AudioService {
       return {
         _id: audioId,
         is_audio_favorite: isAudioFavorite,
-        can_play: false,
       };
     }
 
     return {
       _id: audioId,
       is_audio_favorite: isAudioFavorite,
-      can_play: true,
       order: audio.order,
 
       text: audio.text,
       url: audio.url,
-      duration: audio.duration,
 
       trans_text: audio.trans_text,
       trans_url: audio.trans_url,
-      trans_duration: audio.trans_duration,
     };
   }
 

@@ -9,6 +9,24 @@ import { ResponseCode } from '../utils/constants';
 
 class WordController {
   /**
+ * 获取菜单
+ * @param {Request} req - 请求对象
+ * @param {Response} res - 响应对象
+ * @returns {Promise<any>} 返回菜单列表
+ */
+  async getMenus(req: Request, res: Response) {
+    try {
+      const menu = await wordService.getMenus();
+
+      logger.info(`获取菜单成功`);
+      return SuccessHandler(res, { menu });
+    } catch (error: any) {
+      logger.error(`获取菜单失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.GET_MENUS_FAILED, error.message);
+    }
+  }
+
+  /**
    * 创建单词
    * @param {Request} req - 请求对象
    * @param {Response} res - 响应对象
@@ -35,9 +53,27 @@ class WordController {
    */
   async getAllWords(req: Request, res: Response) {
     try {
-      const result = await wordService.getAllWords();
+      const page = parseInt(req.query.page as string) || 1;
+      const page_size = parseInt(req.query.page_size as string) || 25;
 
-      logger.info(`获取单词列表成功: ${result.length}`);
+      const category = req.query.category 
+        ? Array.isArray(req.query.category)
+          ? req.query.category.map(cat => String(cat).toUpperCase())
+          : [String(req.query.category).toUpperCase()]
+        : undefined;
+      const learning_status = req.query.learning_status 
+        ? String(req.query.learning_status).toUpperCase() 
+        : undefined;
+      const favorite = req.query.favorite
+        ? Boolean(req.query.favorite)
+        : undefined;
+      const random = req.query.isRandom
+        ? Boolean(req.query.random)
+        : false;
+
+      const result = await wordService.getAllWordsByCat(req.user.openId, page, page_size, category, learning_status, favorite, random);
+
+      logger.info(`获取单词列表成功: ${result.word_count}个单词, 当前页: ${page}, 每页: ${page_size}`);
       return SuccessHandler(res, { result });
 
     } catch (error: any) {
@@ -106,6 +142,7 @@ class WordController {
     }
   }
 
+//----------------------------------------- 学习 -----------------------------------------
   /**
    * 获取学习状态
    * @param {Request} req - 请求对象
@@ -116,10 +153,10 @@ class WordController {
     try {
       const wordId = req.params.id;
       const openId = req.user.openId;
-      const result = await wordFavService.getLearningStatus(openId, wordId);
-  
-      logger.info(`获取学习状态成功: ${result.isLearned}`);
-      return SuccessHandler(res, { result });
+      const status = await wordLearnService.checkStatus(openId, wordId);
+    
+      logger.info(`获取学习状态成功: ${status}`);
+      return SuccessHandler(res, { isLearned: status });
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
       return ErrorHandler(res, ResponseCode.GET_WORD_LEARNING_STATUS_FAILED, error.message);
@@ -127,45 +164,46 @@ class WordController {
   }
 
   /**
-   * 获取收藏状态
+   * 根据传入数字标为已掌握/未学/学习中
    * @param {Request} req - 请求对象
    * @param {Response} res - 响应对象
-   * @returns {Promise<any>} 返回收藏状态的boolean
-   */
-  async getFavoriteStatus(req: Request, res: Response) {
-    try {
-      const wordId = req.params.id;
-      const openId = req.user.openId;
-      const result = await wordFavService.checkFavStatusByWordId(openId, wordId);
-  
-      logger.info(`获取收藏状态成功: ${result}`);
-      return SuccessHandler(res, { result });
-    } catch (error: any) {
-      logger.error(`获取收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return ErrorHandler(res, ResponseCode.GET_FAVORITE_WORD_STATUS_FAILED, error.message);
-    }
-  } 
-
-  /**
-   * 标为已掌握/未学/学习中
-   * @param {Request} req - 请求对象
-   * @param {Response} res - 响应对象
-   * @returns {Promise<any>} 返回更新后的学习状态的boolean
+   * @returns {Promise<any>} 返回更新后的学习状态和正确次数
    */
   async updateLearningStatus(req: Request, res: Response) {
     try {
       const wordId = req.params.id;
       const openId = req.user.openId;
-      const learningStatus = req.body.learningStatus;
-      const status = await wordLearnService.updateLearningStatus(openId, wordId, learningStatus);
+      const correctCount = req.body.correctCount;
+      const learningStatus = await wordLearnService.updateLearningStatus(openId, wordId, correctCount);
 
-      logger.info(`更新学习状态成功: ${status.isLearned}`);
-      return SuccessHandler(res, { status });
+      logger.info(`更新学习状态成功: ${wordId}`);
+      return SuccessHandler(res, { learningStatus });
     } catch (error: any) {
       logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
-      return ErrorHandler(res, ResponseCode.UPDATE_LEARNING_STATUS_FAILED, error.message);
+      return ErrorHandler(res, ResponseCode.UPDATE_WORD_LEARNING_STATUS_FAILED, error.message);
     }
   }
+
+//----------------------------------------- 收藏 -----------------------------------------
+  /**
+   * 获取收藏状态
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回收藏状态的boolean
+   */
+  async getFavoriteWordStatus(req: Request, res: Response) {
+    try {
+      const wordId = req.params.wordId;
+      const openId = req.user.openId;
+      const status = await wordFavService.checkFavStatus(openId, wordId);
+  
+      logger.info(`获取单词收藏状态成功: {${wordId}: ${status}}`);
+      return SuccessHandler(res, { isWordFavorite: status });
+    } catch (error: any) {
+      logger.error(`获取单词收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.GET_WORD_FAV_STATUS_FAILED, error.message);
+    }
+  } 
 
   /**
    * 收藏单词
@@ -177,13 +215,13 @@ class WordController {
     try {
       const wordId = req.params.id;
       const openId = req.user.openId;
-      const status = await wordFavService.addFavoriteWord(openId, wordId);
+      const status = await wordFavService.favoriteWord(openId, wordId);
 
-      logger.info(`更新收藏状态成功: ${status.isFavorite}`);
+      logger.info(`收藏单词成功: {${wordId}: ${status.isWordFavorite}}`);
       return SuccessHandler(res, { status });
     } catch (error: any) {
-      logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return ErrorHandler(res, ResponseCode.UPDATE_FAVORITE_STATUS_FAILED, error.message);
+      logger.error(`收藏单词失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.FAVORITE_WORD_FAILED, error.message);
     }
   }
 
@@ -197,13 +235,13 @@ class WordController {
     try {
       const wordId = req.params.id;
       const openId = req.user.openId;
-      const status = await wordFavService.deleteFavoriteWord(openId, wordId);
+      const status = await wordFavService.unfavoriteWord(openId, wordId);
   
-      logger.info(`更新收藏状态成功: ${status.isFavorite}`);
+      logger.info(`取消收藏单词成功: {${wordId}: ${status.isWordFavorite}}`);
       return SuccessHandler(res, { status });
     } catch (error: any) {
-      logger.error(`更新收藏状态失败: ${JSON.stringify({ error: error.message })}`);
-      return ErrorHandler(res, ResponseCode.UPDATE_FAVORITE_STATUS_FAILED, error.message);
+      logger.error(`取消收藏单词失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.UNFAVORITE_WORD_FAILED, error.message);
     }
   }
 }

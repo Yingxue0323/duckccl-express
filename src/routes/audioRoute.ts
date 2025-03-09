@@ -6,7 +6,7 @@ const router = Router();
 
 // 基础curd
 router.get('/', authMiddleware, audioController.getAllAudios); // 获取音频列表，通过user profile -> favoriate audios进入
-router.get('/:id', authMiddleware, audioController.getAudioById); // 获取音频详情，通过user profile -> favoriate audios进入
+router.get('/:id', authMiddleware, audioController.getAudioById); // 获取音频详情，暂无实际应用场景，测试用
 router.get('/exercise/:id', authMiddleware, audioController.getAudioByExerciseId); // 获取一个练习中的所有音频, exercise -> 进入
 
 // TODO: admin only

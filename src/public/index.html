@@ -295,6 +295,7 @@
                 <button onclick="uploadExercise(${index})" ${exercise.uploaded ? 'disabled' : ''}>
                     ${exercise.uploaded ? '已上传' : '上传练习'}
                 </button>
+                <button onclick="checkExercise(${index})" class="btn btn-info">检查</button>
             `;
             modulesDiv.appendChild(exerciseModule);
             
@@ -415,10 +416,19 @@
 
         async function uploadExercise(index) {
             const exercise = exercises[index];
+            let category = document.getElementById('category').value;
+            
+            // 处理 category 格式
+            if (category.toLowerCase() === 'social welfare') {
+                category = 'SOCIAL_WELFARE';
+            } else {
+                category = category.toUpperCase();
+            }
+
             const exerciseData = {
                 seq: exercise.seq,
                 title: document.getElementById('title').value,
-                category: document.getElementById('category').value.toUpperCase(),
+                category: category,
                 source: exercise.source,
                 isVIPOnly: exercise.isVIPOnly
             };
@@ -431,7 +441,6 @@
                 });
 
                 const result = await response.json();
-                // alert(JSON.stringify(result, null, 2));  // 显示完整返回信息
 
                 if (result.code != 20000) {
                     throw new Error(result.message || '上传失败');
@@ -439,7 +448,7 @@
 
                 exercises[index].uploaded = true;
                 exercises[index]._id = result.data.newExercise._id;
-                exercises[index].order = result.data.newExercise.order;  // 保存 order
+                exercises[index].order = result.data.newExercise.order;
                 newExerciseId = result.data.newExercise._id;
                 displayExercise(index);
             } catch (error) {
@@ -552,6 +561,56 @@
 
             progressDiv.innerHTML = `音频上传完成：${successCount}/${totalAudios}`;
             displayExercise(exerciseIndex);
+        }
+
+        // 添加检查函数
+        function checkExercise(index) {
+            const exercise = exercises[index];
+            let errors = [];
+            
+            // 检查所有音频
+            exercise.audios.forEach(audio => {
+                const isZeroDialogue = audio.order === 0;
+                
+                // 检查基本字段
+                if (!audio.text?.trim()) {
+                    errors.push(`对话${audio.order}: 原文为空`);
+                }
+                if (!audio.url?.trim()) {
+                    errors.push(`对话${audio.order}: 原文链接为空`);
+                }
+                if (!audio.duration || audio.duration === 0) {
+                    errors.push(`对话${audio.order}: 原文时长无效`);
+                }
+                
+                // 非00号对话还需要检查译文相关字段
+                if (!isZeroDialogue) {
+                    if (!audio.language) {
+                        errors.push(`对话${audio.order}: 语言未选择`);
+                    }
+                    if (!audio.trans_text?.trim()) {
+                        errors.push(`对话${audio.order}: 译文为空`);
+                    }
+                    if (!audio.trans_url?.trim()) {
+                        errors.push(`对话${audio.order}: 译文链接为空`);
+                    }
+                    if (!audio.trans_duration || audio.trans_duration === 0) {
+                        errors.push(`对话${audio.order}: 译文时长无效`);
+                    }
+                }
+            });
+            
+            if (errors.length > 0) {
+                // 如果有错误，显示错误信息
+                alert('检查发现以下问题：\n' + errors.join('\n'));
+            } else {
+                // 检查通过，滚动到底部的批量上传按钮
+                const bottomNavButtons = document.querySelector('.module:last-child');
+                if (bottomNavButtons) {
+                    bottomNavButtons.scrollIntoView({ behavior: 'smooth' });
+                }
+                alert('检查通过！可以进行批量上传。');
+            }
         }
     </script>
 </body>
