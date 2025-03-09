@@ -1,5 +1,7 @@
 import AudioFavorite from '../models/AudioFavorite';
+import Exercise from '../models/Exercise';
 import User from '../models/User';
+import Audio from '../models/Audio';
 
 class AudioFavService {
  /**
@@ -52,8 +54,11 @@ class AudioFavService {
     const existingFavorite = await AudioFavorite.findOne({openId, audioId});
     // 如果不存在，则新增收藏，更新用户收藏数+1
     if (!existingFavorite) {
-        await AudioFavorite.create({ openId, audioId });
-        await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": 1 } });
+      const audio = await Audio.findById(audioId);
+      const exercise = await Exercise.findById(audio?.exerciseId);
+      if (!exercise) throw new Error('Related exercise not found, please verify the audioId');
+      await AudioFavorite.create({ openId, audioId, exerciseTitle: exercise?.title, exerciseSeq: exercise?.seq });
+      await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": 1 } });
     }
 
     return { isAudioFavorite: true };

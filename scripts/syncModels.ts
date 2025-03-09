@@ -5,6 +5,8 @@ import ExerciseFavorite from '../src/models/ExerciseFavorite';
 import ExerciseLearned from '../src/models/ExerciseLearned';
 import Redeem from '../src/models/Redeem';
 // import SaticContent from '../src/models/SaticContent';
+import Audio from '../src/models/Audio';
+import AudioFavorite from '../src/models/AudioFavorite';
 import UserPractice from '../src/models/UserPractice';
 import Word from '../src/models/Word';
 import WordFavorite from '../src/models/WordFavorite';
@@ -26,6 +28,8 @@ async function syncAllModels() {
     //   SaticContent,
       User,
       UserPractice,
+      Audio,
+      AudioFavorite,
       Word,
       WordFavorite,
       WordLearning,
