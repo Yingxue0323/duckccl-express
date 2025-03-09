@@ -68,8 +68,9 @@ jobs:
         echo ".env文件创建完成，开始设置权限🔒..."
         
         # 设置权限
-        chmod 600 /var/www/koala-ccl/.env
-        chmod -R 755 /var/www/koala-ccl
+        sudo chmod 600 /var/www/koala-ccl/.env
+        sudo chmod -R 755 /var/www/koala-ccl/dist
+        sudo chown -R www-data:www-data /var/www/koala-ccl/dist/public
         echo "权限设置完成，开始重启应用🔄..."
 
         if pm2 list | grep -q "koala"; then
