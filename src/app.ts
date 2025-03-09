@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import logger from './utils/logger';
 import { registerRoutes } from './routes';
 import { errorHandler } from './middlewares/errorHandler';
+import path from 'path';
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // 静态文件服务
-app.use(express.static('src/public'));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // 数据库连接
 connectDB();
