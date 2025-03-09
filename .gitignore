@@ -13,4 +13,6 @@ scripts/
 
 # Build files
 dist/
+!dist/public/
+!src/public/
 logs/

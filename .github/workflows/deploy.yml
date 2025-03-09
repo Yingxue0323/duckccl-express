@@ -45,14 +45,14 @@ jobs:
         npm run build
         echo "编译完成，开始构建🏠..."
 
-         # 只同步变化的文件
+        # 只同步变化的文件
         sudo rsync -av --delete \
         --exclude=".git" \
         --exclude="node_modules" \
         --exclude="package-lock.json" \
         dist/ /var/www/koala-ccl/dist/
         
-        sudo rsync -av dist/public/ /var/www/koala-ccl/public/
+        sudo rsync -av src/public/ /var/www/koala-ccl/dist/public/
         sudo rsync -av package.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
         echo "同步完成，开始检查依赖更新🔍..."
 

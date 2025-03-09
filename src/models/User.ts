@@ -42,7 +42,7 @@ const UserSchema = new Schema({
   },
   avatarUrl: { 
     type: String,
-    default: '/default_avatar.png'
+    default: '/public/default_avatar.png'
   },
   favoriteCount: {
     word: {
