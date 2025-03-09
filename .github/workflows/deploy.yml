@@ -52,7 +52,7 @@ jobs:
         --exclude="package-lock.json" \
         dist/ /var/www/koala-ccl/dist/
         
-        sudo rsync -av public/ /var/www/koala-ccl/public/
+        sudo rsync -av dist/public/ /var/www/koala-ccl/public/
         sudo rsync -av package.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
         echo "同步完成，开始检查依赖更新🔍..."
 
