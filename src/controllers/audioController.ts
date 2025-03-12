@@ -35,8 +35,10 @@ class AudioController {
    */
   async getAllAudios(req: Request, res: Response) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const page_size = parseInt(req.query.page_size as string) || 25;
+      const page = req.query.page ? 
+        parseInt(req.query.page as string) : 1;
+      const page_size = req.query.page_size ? 
+        parseInt(req.query.page_size as string) : 25;
 
       const favorite = req.query.favorite ? 
         Boolean(req.query.favorite) : undefined;

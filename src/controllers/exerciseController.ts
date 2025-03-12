@@ -53,13 +53,13 @@ class ExerciseController {
    */
   async getAllExercises(req: Request, res: Response) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const page_size = parseInt(req.query.page_size as string) || 25;
+      const page = req.query.page ? 
+        parseInt(req.query.page as string) : 1;
+      const page_size = req.query.page_size ? 
+        parseInt(req.query.page_size as string) : 25;
 
       const category = req.query.category 
-        ? Array.isArray(req.query.category)
-          ? req.query.category.map(cat => String(cat).toUpperCase())
-          : [String(req.query.category).toUpperCase()]
+        ? String(req.query.category).split(',').map(cat => cat.trim().toUpperCase())
         : undefined;
       const source = req.query.source 
         ? String(req.query.source).toUpperCase() 
@@ -100,6 +100,25 @@ class ExerciseController {
     } catch (error: any) {
       logger.error(`获取练习详情失败: ${JSON.stringify({ error: error.message })}`);
       return ErrorHandler(res, ResponseCode.GET_EXERCISE_BY_ID_FAILED, error.message);
+    }
+  }
+
+  /**
+   * 获取随机练习
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回随机练习的题目
+   */
+  async getRandomExercises(req: Request, res: Response) {
+    try {
+      const openId = req.user.openId;
+      const result = await exerciseService.getRandomExercises(openId);
+
+      logger.info(`获取随机练习成功: ${result.order}号练习`);
+      return SuccessHandler(res, { result });
+    } catch (error: any) {
+      logger.error(`获取随机练习失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.GET_RANDOM_EXERCISES_FAILED, error.message);
     }
   }
 

@@ -45,13 +45,13 @@ class ExerciseService {
    * @param {string} learning_status - 学习状态
    * @returns {Promise<any>} 返回练习总数、已学数量、收藏数量和题目简要信息列表
    */
-  async getAllExercisesByCat(openId: string, page: number = 1, page_size: number = 25, 
+  async getAllExercisesByCat(openId: string, page?: number, page_size?: number, 
    category?: string[], source?: string, learning_status?: string, favorite?: boolean): Promise<any> {
     if (!openId) throw new Error('User is required');
     
     // 页数处理
-    if (page < 1) page = 1;
-    if (page_size < 1) page_size = 25;
+    if (!page) page = 1;
+    if (!page_size) page_size = 25;
     const skip = (page - 1) * page_size; // 计算跳过的记录数
 
     // 参数处理
@@ -125,6 +125,7 @@ class ExerciseService {
     if (!exerciseId || !openId) throw new Error('Exercise ID and User ID are required');
 
     // 1. 检查是否允许展示，如果不允许，则直接返回
+    // 注释掉：因为列表显示已经筛选过vip
     // const isUserVIP = await userService.checkVIPStatus(openId);
     const exercise = await Exercise.findById(exerciseId)
       .select('seq title category source')
@@ -174,6 +175,46 @@ class ExerciseService {
     const deletedExercise = await Exercise.findByIdAndDelete(exerciseId);
     if (!deletedExercise) throw new Error('Exercise not found');
     return true;
+  }
+
+  /**
+   * @param {string} openId - 用户ID
+   * @returns {any} 返回随机练习详情
+   */
+  async getRandomExercises(openId: string): Promise<any> {
+    if (!openId) throw new Error('User openId is required'); 
+    const isUserVIP = await userService.checkVIPStatus(openId);
+
+    const totalExercises = await Exercise.countDocuments();
+    const randomIndex = Math.floor(Math.random() * totalExercises);
+    const randomExercise = await Exercise.findOne({order: randomIndex})
+      .select('seq title category source isVIPOnly')
+      .lean();
+    if (!randomExercise) throw new Error('Exercise not found');
+
+    // 1. 检查是否允许展示，如果不允许，则直接返回
+    if (randomExercise.isVIPOnly && !isUserVIP){
+      return {  // 基础信息仍然展示，但是不寻找对应audios
+        ...randomExercise,
+        can_show: false
+      };
+    }
+
+    const exerciseId = randomExercise._id.toString();
+    // 2. 允许展示，则寻找对应状态和该练习包含的audios
+    const [isExeLearned, isExeFavorite, audios] = await Promise.all([
+      exeLearnService.checkLearningStatus(openId, exerciseId),
+      exeFavService.checkFavStatus(openId, exerciseId),
+      audioService.getAudiosByExerciseId(openId, exerciseId)
+    ]);
+
+    return {
+      is_exe_learned: isExeLearned,
+      is_exe_favorite: isExeFavorite,
+      // can_show: true,
+      ...randomExercise,
+      audios: audios
+    };
   }
 }
 

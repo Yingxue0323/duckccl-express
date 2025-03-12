@@ -36,12 +36,12 @@ class WordService {
   * @param {boolean} random - 是否随机，默认false
   * @returns {Promise<any>} 返回所有单词formatted信息
   */
-  async getAllWordsByCat(openId: string, page: number, page_size: number, category?: string[], learning_status?: string, favorite?: boolean, random: boolean = false): Promise<any> {
+  async getAllWordsByCat(openId: string, page?: number, page_size?: number, category?: string[], learning_status?: string, favorite?: boolean, random: boolean = false): Promise<any> {
     if (!openId) throw new Error('User is required');
     
     // 页数处理
-    if (page < 1) page = 1;
-    if (page_size < 1) page_size = 25;
+    if (!page) page = 1;
+    if (!page_size) page_size = 25;
     const skip = (page - 1) * page_size; // 计算跳过的记录数
 
     // 参数处理

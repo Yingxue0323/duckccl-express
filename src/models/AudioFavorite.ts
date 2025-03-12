@@ -4,8 +4,6 @@ export interface IAudioFavorite extends Document {
   _id: mongoose.Types.ObjectId;
   openId: string;
   audioId: string;
-  exerciseTitle: string;
-  exerciseSeq: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -20,14 +18,6 @@ const AudioFavoriteSchema = new Schema({
     type: String,
     required: true,
     index: true
-  },
-  exerciseTitle: {
-    type: String,
-    required: true
-  },
-  exerciseSeq: {
-    type: String,
-    required: true
   }
 }, {
   timestamps: true
