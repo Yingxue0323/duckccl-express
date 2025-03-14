@@ -92,6 +92,7 @@ export enum ResponseCode {
   SESSION_EXPIRED = 40006,
   NO_ADMIN_PERMISSION = 40007,
   LOGOUT_FAILED = 40008,
+  WX_SIGNUP_FAILED = 40009,
 
   // 用户相关 (41xxx)
   USER_NOT_FOUND = 41001,
@@ -179,7 +180,7 @@ export const ErrorMessages: Record<ResponseCode, string> = {
   [ResponseCode.SESSION_EXPIRED]: '会话已过期',
   [ResponseCode.NO_ADMIN_PERMISSION]: '无管理员权限',
   [ResponseCode.LOGOUT_FAILED]: '登出失败',
-
+  [ResponseCode.WX_SIGNUP_FAILED]: '微信注册失败',
   // 用户相关
   [ResponseCode.USER_NOT_FOUND]: '用户不存在',
   [ResponseCode.GET_ALL_USERS_FAILED]: '获取所有用户失败',

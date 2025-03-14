@@ -42,7 +42,7 @@ const UserSchema = new Schema({
   },
   avatarUrl: { 
     type: String,
-    default: '/public/default_avatar.png'
+    default: 'https://koala-ccl-bucket.s3.ap-southeast-2.amazonaws.com/img/default_avatar.png'
   },
   favoriteCount: {
     word: {

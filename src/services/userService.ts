@@ -14,7 +14,7 @@ class UserService {
       loginType: LOGIN_TYPE.WECHAT
     }) as IUser;
 
-    const token = generateToken(user.openId);
+    const token = await generateToken(user.openId);
     return { user, token };
   }
 
@@ -51,7 +51,7 @@ class UserService {
   // 更新会话(反复登录)，由auth中的refreshToken实现
   async updateSessionKey(openId: string, sessionKey: string): Promise<IUser> {
     const user = await User.findOneAndUpdate(
-      { openId },
+      { openId: openId },
       { $set: { sessionKey } },
       { new: true }
     ) as IUser;
@@ -76,7 +76,7 @@ class UserService {
   // 清除会话(登出)，由auth中的wechatLogout实现
   async clearSession(openId: string) {
     const user = await User.findOneAndUpdate(
-      { openId },
+      { openId: openId },
       { $set: { sessionKey: "" } }
     ) as IUser;
     if (!user) throw new Error('Clear session failed: User not found');

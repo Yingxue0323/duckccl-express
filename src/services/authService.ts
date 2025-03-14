@@ -1,11 +1,11 @@
 import { userService } from '../services/userService';
 import { code2Session } from '../utils/wechat';
-import { generateToken } from '../utils/jwt';
+import { clearUserTokens, generateToken, verifyToken } from '../utils/jwt';
 import { IUser } from '../models/User';
 import User from '../models/User';
 
 class AuthService {
-  async wechatLogin(code: string): Promise<{ user: IUser; token: string }> {
+  async wechatLogin(code: string): Promise<any> {
     // 1. 获取openid和session_key
     const wxSession = await code2Session(code);
     const { openid, session_key } = wxSession;
@@ -13,14 +13,14 @@ class AuthService {
     // 2. 查找或创建用户
     let user = await User.findOne({ openId: openid }) as IUser;
 
-    if (!user) { // 3a. 创建新用户
+    if (!user) { // 3a. 如不存在，创建新用户
       const { user: newUser, token } = await userService.createUser(openid, session_key);
       return { user: newUser, token };
     }
 
-    // 3b. 更新用户信息
+    // 3b. 否则更新用户信息
     user = await userService.updateSessionKey(openid, session_key);
-    const token = generateToken(user.openId);
+    const token = await generateToken(user.openId);
 
     return { user, token };
   }
@@ -35,12 +35,14 @@ class AuthService {
     const user = await userService.updateSessionKey(wxSession.openid, wxSession.session_key);
     
     // 3. 生成新 token
-    const token = generateToken(user.openId);
+    const token = await generateToken(user.openId);
     
     return { token };
   }
 
   async wechatLogout(openId: string): Promise<{ success: boolean }> {
+    await clearUserTokens(openId);
+
     const result = await userService.clearSession(openId);
     return result;
   }

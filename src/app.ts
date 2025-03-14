@@ -16,7 +16,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // 静态文件服务
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
 // 数据库连接
 connectDB();

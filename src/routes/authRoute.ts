@@ -5,13 +5,9 @@ import { authMiddleware } from '../middlewares/authMW';
 const router = Router();
 
 // ---------------------------------------------用户---------------------------------------------
-// 微信登录
-router.post('/login', authController.wechatLogin);
+router.post('/login', authController.wechatLogin);  // 微信登录
 
-// 刷新 token
-router.post('/refresh-token', authController.refreshToken);
-
-// 微信登出
-router.delete('/logout', authMiddleware, authController.wechatLogout);
+router.post('/refresh-token', authController.refreshToken);  // 刷新 token
+router.delete('/logout', authMiddleware, authController.wechatLogout);  // 微信登出
 
 export default router; 

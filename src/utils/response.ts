@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { ResponseCode, ErrorMessages } from './constants';
 
-export function ErrorHandler(res: Response, code: ResponseCode, errorMessage: string) {
+export function ErrorHandler(res: Response, code: ResponseCode, errorMessage?: string) {
   return res.json({
     code,
-    message: errorMessage
+    message: errorMessage || ErrorMessages[code]
   });  
 }
 
