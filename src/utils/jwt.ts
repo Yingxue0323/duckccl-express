@@ -28,15 +28,16 @@ export const generateToken = async (openId: string): Promise<string> => {
 
 /**
  * 验证token(清除过期token),不验证token是否有效
+ * @param {string} openId 
  * @param {string} token 
  * @returns {boolean} 是否有效
  */
-export const verifyToken = async (token: string): Promise<boolean> => {
+export const verifyToken = async (openId: string, token: string): Promise<boolean> => {
   try {
-    //1.检查token是否在数据库中存在且未过期
+    //1.检查对应用户的token是否在数据库中存在
     const tokenDoc = await Token.findOne({ 
-      token: token,
-      expiresAt: { $gt: new Date() }
+      openId: openId,
+      token: token
     });
     if (!tokenDoc) return false;
 

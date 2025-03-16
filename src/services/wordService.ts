@@ -1,6 +1,8 @@
 import Word, { IWord } from '../models/Word';
 import { wordFavService } from './wordFavService';
 import { wordLearnService } from './wordLearnService';
+import { ParamError } from '../utils/errors';
+import { ResponseCode } from '../utils/constants';
 
 class WordService {
   /**
@@ -20,6 +22,9 @@ class WordService {
   * @returns {Promise<IWord>} 返回创建的单词的raw信息
   */
   async createWord(word: any): Promise<IWord> {
+    if (!word.category || !word.order || !word.text || !word.url || !word.translation) {
+      throw new ParamError(ResponseCode.INVALID_PARAM, 'Invalid new word data');
+    }
     const newWord = await Word.create(word);
     const result = await newWord.save();
     return result;
@@ -37,7 +42,7 @@ class WordService {
   * @returns {Promise<any>} 返回所有单词formatted信息
   */
   async getAllWordsByCat(openId: string, page?: number, page_size?: number, category?: string[], learning_status?: string, favorite?: boolean, random: boolean = false): Promise<any> {
-    if (!openId) throw new Error('User is required');
+    if (!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'OpenId is required for getAllWordsByCat');
     
     // 页数处理
     if (!page) page = 1;
@@ -120,6 +125,7 @@ class WordService {
   * @returns {Promise<any>} 返回单词格式后的信息
   */
   async getWordById(wordId: string, openId: string): Promise<any> {
+    if (!wordId || !openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Word ID and User openId are required');
     const word = await Word.findById(wordId)
       .select('_id category text url translation')
       .lean();
@@ -145,6 +151,7 @@ class WordService {
   * @returns {Promise<IWord>} 返回更新后的单词的raw信息
   */
   async updateWord(wordId: string, word: any): Promise<IWord> {
+    if (!wordId || !word) throw new ParamError(ResponseCode.INVALID_PARAM, 'Word ID and update data are required');
     const updatedWord = await Word.findByIdAndUpdate(wordId, word, { new: true });
     if (!updatedWord) throw new Error('Word not found');
     return updatedWord;
@@ -156,6 +163,7 @@ class WordService {
    * @returns {Promise<boolean>} 返回删除成功与否
    */ 
   async deleteWord(wordId: string): Promise<boolean> {
+    if (!wordId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Word ID is required');
     const deletedWord = await Word.findByIdAndDelete(wordId);
     if (!deletedWord) throw new Error('Word not found');
 

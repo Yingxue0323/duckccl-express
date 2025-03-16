@@ -3,6 +3,8 @@ import { audioService } from './audioService';
 import { exeLearnService } from './exeLearnService';
 import { exeFavService } from './exeFavService';
 import { userService } from './userService';
+import { ParamError } from '../utils/errors';
+import { ResponseCode } from '../utils/constants';
 
 class ExerciseService {
   /**
@@ -24,6 +26,9 @@ class ExerciseService {
    * @returns {Promise<IExercise>} 返回创建后的练习对象
    */
   async createExercise(data: any): Promise<IExercise> {
+    if (!data.seq || !data.title || !data.category || !data.source || !data.isVIPOnly) {
+      throw new ParamError(ResponseCode.INVALID_PARAM, 'Invalid new exercise data');
+    }
     const exercise = await Exercise.create({
       seq: data.seq,
       title: data.title,
@@ -47,7 +52,7 @@ class ExerciseService {
    */
   async getAllExercisesByCat(openId: string, page?: number, page_size?: number, 
    category?: string[], source?: string, learning_status?: string, favorite?: boolean): Promise<any> {
-    if (!openId) throw new Error('User is required');
+    if (!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'OpenId is required for getAllExercisesByCat');
     
     // 页数处理
     if (!page) page = 1;
@@ -122,7 +127,7 @@ class ExerciseService {
    * @returns {Promise<any>} 返回练习详情
    */
   async getExerciseById(exerciseId: string, openId: string): Promise<any> {
-    if (!exerciseId || !openId) throw new Error('Exercise ID and User ID are required');
+    if (!exerciseId || !openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Exercise ID and User openID are required');
 
     // 1. 检查是否允许展示，如果不允许，则直接返回
     // 注释掉：因为列表显示已经筛选过vip
@@ -161,6 +166,7 @@ class ExerciseService {
    * @returns {Promise<any>} 返回更新后的练习对象
    */
   async updateExercise(exerciseId: string, data: any): Promise<{updatedExercise: IExercise}> {
+    if (!exerciseId || !data) throw new ParamError(ResponseCode.INVALID_PARAM, 'Exercise ID and update data are required');
     const updatedExercise = await Exercise.findByIdAndUpdate(exerciseId, data);
     if (!updatedExercise) throw new Error('Exercise not found');
     return { updatedExercise }
@@ -172,6 +178,7 @@ class ExerciseService {
    * @returns {Promise<any>} 返回删除成功与否的boolean
    */
   async deleteExercise(exerciseId: string): Promise<boolean> {
+    if (!exerciseId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Exercise ID is required');
     const deletedExercise = await Exercise.findByIdAndDelete(exerciseId);
     if (!deletedExercise) throw new Error('Exercise not found');
     return true;
@@ -182,7 +189,7 @@ class ExerciseService {
    * @returns {any} 返回随机练习详情
    */
   async getRandomExercises(openId: string): Promise<any> {
-    if (!openId) throw new Error('User openId is required'); 
+    if (!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'OpenId is required for getRandomExercises'); 
     const isUserVIP = await userService.checkVIPStatus(openId);
 
     const totalExercises = await Exercise.countDocuments();

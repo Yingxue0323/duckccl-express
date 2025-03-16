@@ -84,15 +84,9 @@ export enum ResponseCode {
   SUCCESS = 20000,
 
   // 认证相关 (4xxxx)
-  UNAUTHORIZED = 40001,
-  NO_TOKEN = 40002,
-  TOKEN_EXPIRED = 40003,
-  TOKEN_INVALID = 40004,
-  TOKEN_REFRESH_FAILED = 40005,
-  SESSION_EXPIRED = 40006,
-  NO_ADMIN_PERMISSION = 40007,
-  LOGOUT_FAILED = 40008,
-  WX_SIGNUP_FAILED = 40009,
+  TOKEN_INVALID = 40001,
+  TOKEN_REFRESH_FAILED = 40002,
+  LOGOUT_FAILED = 40003,
 
   // 用户相关 (41xxx)
   USER_NOT_FOUND = 41001,
@@ -153,10 +147,12 @@ export enum ResponseCode {
   UNFAVORITE_AUDIO_FAILED = 44008,
   GET_FAVORITE_AUDIO_STATUS_FAILED = 44009,
   
-  // 通用错误 (5xxxx)
-  INVALID_REQUEST = 50001,
-  INTERNAL_SERVER_ERROR = 50002,
-  DATABASE_ERROR = 50003,
+  // 通用错误 (45xxx)
+  INVALID_PARAM = 45001,
+
+  // 服务器错误 (5xxxx)
+  INTERNAL_SERVER_ERROR = 50001,
+  DATABASE_ERROR = 50002,
 
   // 外部接口错误 (6xxxx)
   WX_LOGIN_FAILED = 60001,
@@ -172,15 +168,10 @@ export const ErrorMessages: Record<ResponseCode, string> = {
   [ResponseCode.SUCCESS]: '操作成功',
 
   // 认证相关
-  [ResponseCode.UNAUTHORIZED]: '未授权访问',
-  [ResponseCode.NO_TOKEN]: '未提供认证令牌',
-  [ResponseCode.TOKEN_EXPIRED]: '认证令牌已过期',
   [ResponseCode.TOKEN_INVALID]: '无效的认证令牌',
   [ResponseCode.TOKEN_REFRESH_FAILED]: '刷新token失败',
-  [ResponseCode.SESSION_EXPIRED]: '会话已过期',
-  [ResponseCode.NO_ADMIN_PERMISSION]: '无管理员权限',
   [ResponseCode.LOGOUT_FAILED]: '登出失败',
-  [ResponseCode.WX_SIGNUP_FAILED]: '微信注册失败',
+
   // 用户相关
   [ResponseCode.USER_NOT_FOUND]: '用户不存在',
   [ResponseCode.GET_ALL_USERS_FAILED]: '获取所有用户失败',
@@ -237,7 +228,9 @@ export const ErrorMessages: Record<ResponseCode, string> = {
   [ResponseCode.GET_FAVORITE_AUDIO_STATUS_FAILED]: '获取音频收藏状态失败',
 
   // 通用错误
-  [ResponseCode.INVALID_REQUEST]: '无效的请求',
+  [ResponseCode.INVALID_PARAM]: '无效的请求参数',
+  
+  // 服务器错误
   [ResponseCode.INTERNAL_SERVER_ERROR]: '服务器内部错误',
   [ResponseCode.DATABASE_ERROR]: '数据库操作失败',
 

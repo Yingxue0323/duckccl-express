@@ -3,6 +3,7 @@ import logger from '../utils/logger';
 import { userService } from '../services/userService';
 import { SuccessHandler, ErrorHandler } from '../utils/response';
 import { ResponseCode } from '../utils/constants';
+import { ParamError } from '../utils/errors';
 
 class UserController {
   /**
@@ -38,6 +39,7 @@ class UserController {
       return SuccessHandler(res, { user });
     } catch (error: any) {
       logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_USER_PROFILE_FAILED, error.message);
     }
   }
@@ -58,6 +60,7 @@ class UserController {
 
     } catch (error: any) {
       logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_USER_BY_ID_FAILED, error.message);
     }
   }
@@ -77,6 +80,7 @@ class UserController {
       return SuccessHandler(res, { user });
     } catch (error: any) {
       logger.error(`获取用户信息失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_USER_BY_OPENID_FAILED, error.message);
     }
   }
@@ -97,6 +101,7 @@ class UserController {
       return SuccessHandler(res, { user });
     } catch (error: any) {
       logger.error(`更新用户信息失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UPDATE_USER_FAILED, error.message);
     }
   }
@@ -116,6 +121,7 @@ class UserController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`删除用户失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.DELETE_USER_FAILED, error.message);
     }
   }

@@ -6,6 +6,7 @@ import { wordLearnService } from '../services/wordLearnService';
 import logger from '../utils/logger';
 import { SuccessHandler, ErrorHandler } from '../utils/response';
 import { ResponseCode } from '../utils/constants';
+import { ParamError } from '../utils/errors';
 
 class WordController {
   /**
@@ -41,6 +42,7 @@ class WordController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`创建单词失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.CREATE_WORD_FAILED, error.message);
     }
   }
@@ -80,6 +82,7 @@ class WordController {
 
     } catch (error: any) {
       logger.error(`获取单词列表失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_ALL_WORDS_FAILED, error.message);
     }
   }
@@ -101,6 +104,7 @@ class WordController {
 
     } catch (error: any) {
       logger.error(`获取单词详情失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_WORD_BY_ID_FAILED, error.message);
     }
   }
@@ -121,6 +125,7 @@ class WordController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`更新单词失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UPDATE_WORD_FAILED, error.message);
     }
   }
@@ -140,6 +145,7 @@ class WordController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`删除单词失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.DELETE_WORD_FAILED, error.message);
     }
   }
@@ -161,6 +167,7 @@ class WordController {
       return SuccessHandler(res, { isLearned: status });
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_WORD_LEARNING_STATUS_FAILED, error.message);
     }
   }
@@ -182,6 +189,7 @@ class WordController {
       return SuccessHandler(res, { learningStatus });
     } catch (error: any) {
       logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UPDATE_WORD_LEARNING_STATUS_FAILED, error.message);
     }
   }
@@ -203,6 +211,7 @@ class WordController {
       return SuccessHandler(res, { isWordFavorite: status });
     } catch (error: any) {
       logger.error(`获取单词收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_WORD_FAV_STATUS_FAILED, error.message);
     }
   } 
@@ -223,6 +232,7 @@ class WordController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`收藏单词失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.FAVORITE_WORD_FAILED, error.message);
     }
   }
@@ -243,6 +253,7 @@ class WordController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`取消收藏单词失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UNFAVORITE_WORD_FAILED, error.message);
     }
   }

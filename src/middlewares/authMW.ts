@@ -23,29 +23,31 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
   // 1. 从请求头获取 token
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
-    logger.error(`${req.method} ${req.url} - 未提供认证令牌`);
-    return ErrorHandler(res, ResponseCode.NO_TOKEN);
+    logger.error(`${req.method} ${req.url} - authMW: 请求头未携带token`);
+    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: 请求头未携带token');
   }
 
-  // 2. 验证 token
+  // 2. jwt验证 token
   let decoded;
   try {
-    const isValid = await verifyToken(token);
-    if (!isValid) {
-      logger.error(`${req.method} ${req.url} - authMW: 认证失败: 无效的token`);
-      return ErrorHandler(res, ResponseCode.TOKEN_INVALID);
-    }
     decoded = jwt.verify(token, config.jwt.secret) as { openId: string };
   } catch (error: any) {
-    logger.error(`${req.method} ${req.url} - authMW: 认证失败: ${error.message}`);
-    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, error.message);
+    logger.error(`${req.method} ${req.url} - authMW: 解析token失败(jwt) ${error.message}`);
+    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: 解析token失败(jwt)');
+  }
+
+  // 3.数据库核对token
+  const isValid = await verifyToken(decoded.openId, token);
+  if (!isValid) {
+    logger.error(`${req.method} ${req.url} - authMW: token过期(数据库)`);
+    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: token过期(数据库)');
   }
     
   // 3. 查找用户
   const user = await userService.getUserByOpenid(decoded.openId);
   if (!user) {
-    logger.error(`${req.method} ${req.url} - authMW: 用户不存在`);
-    return ErrorHandler(res, ResponseCode.USER_NOT_FOUND);
+    logger.error(`${req.method} ${req.url} - authMW: 该token对应用户不存在`);
+    return ErrorHandler(res, ResponseCode.USER_NOT_FOUND, 'authMW: 该token对应用户不存在');
   }
 
   // 将用户信息附加到请求对象
@@ -56,7 +58,7 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
     logger.info(`${req.method} ${req.url} - authMW: 认证成功`);
     next();
   } catch (error: any) {
-    logger.error(`${req.method} ${req.url} - authMW: 认证失败: ${error.message}`);
+    logger.error(`${req.method} ${req.url} - authMW: 用户信息附加失败 ${error.message}`);
     return ErrorHandler(res, ResponseCode.TOKEN_INVALID, error.message);
   }
 };

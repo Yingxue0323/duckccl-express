@@ -2,10 +2,13 @@ import User, { IUser } from '../models/User';
 import { LanguageCode, LANGUAGES, LOGIN_TYPE } from '../utils/constants';
 import { generateToken } from '../utils/jwt';
 import logger from '../utils/logger';
+import { ParamError } from '../utils/errors';
+import { ResponseCode } from '../utils/constants';
 
 class UserService {
   // 创建用户
   async createUser(openid: string, session_key: string): Promise<{ user: IUser, token: string }> {
+    if(!openid || !session_key) throw new ParamError(ResponseCode.INVALID_PARAM, 'openid and session_key are required');
     logger.info(`创建用户: ${openid}`);
     const user = await User.create({
       openId: openid,
@@ -27,11 +30,13 @@ class UserService {
 
   // 获取用户信息
   async getUserById(userId: string): Promise<IUser> {
+    if(!userId) throw new ParamError(ResponseCode.INVALID_PARAM, 'userId is required');
     const user = await User.findById(userId);
     if (!user) throw new Error('User not found');
     return user;
   }
   async getUserByOpenid(openId: string): Promise<IUser> {
+    if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOne({ openId });
     if (!user) throw new Error('User not found');
     return user;
@@ -39,6 +44,7 @@ class UserService {
 
   // 更新用户信息（头像、昵称修改，暂不正式开放）
   async updateUserByOpenid(openId: string, newInfo: any): Promise<IUser> {
+    if(!openId || !newInfo) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId and newInfo are required');
     const user = await User.findOneAndUpdate(
       { openId },
       { $set: newInfo },
@@ -50,6 +56,7 @@ class UserService {
 
   // 更新会话(反复登录)，由auth中的refreshToken实现
   async updateSessionKey(openId: string, sessionKey: string): Promise<IUser> {
+    if(!openId || !sessionKey) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId and sessionKey are required');
     const user = await User.findOneAndUpdate(
       { openId: openId },
       { $set: { sessionKey } },
@@ -65,6 +72,7 @@ class UserService {
    * @returns {Promise<boolean>} 返回用户是否为VIP
    */
   async checkVIPStatus(openId: string): Promise<boolean> {
+    if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOne({ openId });
     const now = new Date().getTime();
     if (user?.isVIP && user.vipExpireAt && user.vipExpireAt.getTime() > now) {
@@ -75,6 +83,7 @@ class UserService {
   
   // 清除会话(登出)，由auth中的wechatLogout实现
   async clearSession(openId: string) {
+    if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOneAndUpdate(
       { openId: openId },
       { $set: { sessionKey: "" } }
@@ -89,6 +98,7 @@ class UserService {
    * @returns {Promise<boolean>} 返回成功与否的boolean
    */
   async deleteUserByOpenid(openId: string) {
+    if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOneAndDelete({ openId });
     if (!user) throw new Error('Delete user failed: User not found');
     return true;
@@ -100,6 +110,7 @@ class UserService {
   * @returns {Promise<LanguageCode>} 返回用户偏好语言
   */
   async getUserLang(openId: string): Promise<LanguageCode> {
+    if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOne({ openId });
     return user?.lang || LANGUAGES.CHINESE;
   }

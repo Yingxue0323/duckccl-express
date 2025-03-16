@@ -6,6 +6,7 @@ import { exeLearnService } from '../services/exeLearnService';
 import logger from '../utils/logger';
 import { SuccessHandler, ErrorHandler } from '../utils/response';
 import { ResponseCode } from '../utils/constants';
+import { ParamError } from '../utils/errors';
 
 class ExerciseController {
   /**
@@ -41,6 +42,7 @@ class ExerciseController {
       return SuccessHandler(res, { newExercise });
     } catch (error: any) {
       logger.error(`创建练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.CREATE_EXERCISE_FAILED, error.message);
     }
   }
@@ -78,6 +80,7 @@ class ExerciseController {
 
     } catch (error: any) {
       logger.error(`获取练习列表失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_ALL_EXERCISES_FAILED, error.message);
     }
   }
@@ -99,6 +102,7 @@ class ExerciseController {
 
     } catch (error: any) {
       logger.error(`获取练习详情失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_EXERCISE_BY_ID_FAILED, error.message);
     }
   }
@@ -118,6 +122,7 @@ class ExerciseController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`获取随机练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_RANDOM_EXERCISES_FAILED, error.message);
     }
   }
@@ -138,6 +143,7 @@ class ExerciseController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`更新练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UPDATE_EXERCISE_FAILED, error.message);
     }
   }
@@ -157,6 +163,7 @@ class ExerciseController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`删除练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.DELETE_EXERCISE_FAILED, error.message);
     }
   }
@@ -178,6 +185,7 @@ class ExerciseController {
       return SuccessHandler(res, { isLearned: status });
     } catch (error: any) {
       logger.error(`获取学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_EXE_LEARNING_STATUS_FAILED, error.message);
     }
   }
@@ -198,6 +206,7 @@ class ExerciseController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.LEARN_EXERCISE_FAILED, error.message);
     }
   }
@@ -218,6 +227,7 @@ class ExerciseController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`更新学习状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UNLEARN_EXERCISE_FAILED, error.message);
     }
   }
@@ -239,6 +249,7 @@ class ExerciseController {
       return SuccessHandler(res, { isExeFavorite: status });
     } catch (error: any) {
       logger.error(`获取练习题收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_EXE_FAV_STATUS_FAILED, error.message);
     }
   } 
@@ -259,6 +270,7 @@ class ExerciseController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`收藏练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.FAVORITE_EXERCISE_FAILED, error.message);
     }
   }
@@ -279,6 +291,7 @@ class ExerciseController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`取消收藏练习失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UNFAVORITE_EXERCISE_FAILED, error.message);
     }
   }

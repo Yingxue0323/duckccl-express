@@ -5,6 +5,7 @@ import logger from '../utils/logger';
 import { SuccessHandler, ErrorHandler } from '../utils/response';
 import { ResponseCode } from '../utils/constants';
 import { audioFavService } from '../services/audioFavService';
+import { ParamError } from '../utils/errors';
 
 class AudioController {
 //-----------------------------------------------基础CURD-----------------------------------------------
@@ -23,6 +24,7 @@ class AudioController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`创建音频失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.CREATE_AUDIO_FAILED, error.message);
     }
   }
@@ -50,6 +52,7 @@ class AudioController {
 
     } catch (error: any) {
       logger.error(`获取音频列表失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_ALL_AUDIOS_FAILED, error.message);
     }
   }
@@ -70,6 +73,7 @@ class AudioController {
       return SuccessHandler(res, { audios });
     } catch (error: any) {
       logger.error(`获取音频列表失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_ALL_AUDIOS_FAILED, error.message);
     }
   }
@@ -90,6 +94,7 @@ class AudioController {
 
     } catch (error: any) {
       logger.error(`获取音频详情失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_AUDIO_FAILED, error.message);
     }
   }
@@ -110,6 +115,7 @@ class AudioController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`更新音频失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UPDATE_AUDIO_FAILED, error.message);
     }
   }
@@ -129,6 +135,7 @@ class AudioController {
       return SuccessHandler(res, { result });
     } catch (error: any) {
       logger.error(`删除音频失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.DELETE_AUDIO_FAILED, error.message);
     }
   }
@@ -150,6 +157,7 @@ class AudioController {
       return SuccessHandler(res, { isAudioFavorite: status });
     } catch (error: any) {
       logger.error(`获取音频收藏状态失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.GET_FAVORITE_AUDIO_STATUS_FAILED, error.message);
     }
   } 
@@ -170,6 +178,7 @@ class AudioController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`收藏单段音频失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.FAVORITE_AUDIO_FAILED, error.message);
     }
   }
@@ -190,6 +199,7 @@ class AudioController {
       return SuccessHandler(res, { status });
     } catch (error: any) {
       logger.error(`取消收藏音频失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
       return ErrorHandler(res, ResponseCode.UNFAVORITE_AUDIO_FAILED, error.message);
     }
   }

@@ -2,6 +2,8 @@ import Audio, { IAudio } from '../models/Audio';
 import { userService } from './userService';
 import { audioFavService } from './audioFavService';
 import Exercise from '../models/Exercise';
+import { ParamError } from '../utils/errors';
+import { ResponseCode } from '../utils/constants';
 
 class AudioService {
 
@@ -11,6 +13,9 @@ class AudioService {
    * @returns {Promise<any>} 返回创建后的音频对象
    */
   async createAudio(data: any): Promise<any> {
+    if (!data.exerciseId || !data.order || !data.text || !data.language || !data.url) {
+      throw new ParamError(ResponseCode.INVALID_PARAM, 'Invalid new audio data');
+    }
     const audio = await Audio.create(data);
     await audio.save();
     return { audio };
@@ -26,9 +31,7 @@ class AudioService {
    * @returns {Promise<any>} 返回音频总数、已学数量、收藏数量和音频简要信息列表
    */
   async getAllAudios(openId: string, page?: number, page_size?: number, favorite?: boolean): Promise<any> {
-    if (!openId) {
-      throw new Error('User is required');
-    }
+    if (!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'OpenId is required for getAllAudios');
     
     // 页数处理
     if (!page) page = 1;
@@ -94,7 +97,7 @@ class AudioService {
    * @returns {Promise<any>} 返回音频列表，包含is_audio_favorite、can_play属性
    */
   async getAudiosByExerciseId(openId: string, exerciseId: string): Promise<any> {
-    if (!openId || !exerciseId) throw new Error('User open ID and Exercise ID are required');
+    if (!openId || !exerciseId) throw new ParamError(ResponseCode.INVALID_PARAM, 'User openId and Exercise ID are required');
 
     // 1. 获取当前练习中所有音频(已经过vip筛选)
     const audios = await Audio.find({ exerciseId })
@@ -106,12 +109,7 @@ class AudioService {
     // 2. 获取当前练习中所有已收藏的audio的id集合
     const audioIds = audios.map(audio => audio._id.toString());
     const favoriteAudios = await audioFavService.getFavoriteAudiosByIds(openId, audioIds);
-    console.log('exerciseId', exerciseId);
-    console.log('user', openId);
-    console.log('audioIds', audioIds);
-    console.log('favoriteAudios', favoriteAudios);
     const favoriteAudioSet = new Set(favoriteAudios);
-    console.log('Set', favoriteAudioSet);
 
     // 3. 处理audio列表，添加属性并移除order
     const audioList = audios.map(audio => {
@@ -138,7 +136,7 @@ class AudioService {
    * @returns {Promise<any>} 返回音频详情, 包含is_audio_favorite、can_play属性
    */
   async getAudioById(audioId: string, openId: string): Promise<any> {
-    if (!audioId || !openId) throw new Error('Audio ID and User ID are required');
+    if (!audioId || !openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Audio ID and User openId are required');
 
     const audio = await Audio.findById(audioId).lean();
     if (!audio) throw new Error('Audio not found');
@@ -176,6 +174,7 @@ class AudioService {
    * @returns {Promise<any>} 返回更新后的音频对象
    */
   async updateAudio(audioId: string, data: any): Promise<{updatedAudio: IAudio}> {
+    if (!audioId || !data) throw new ParamError(ResponseCode.INVALID_PARAM, 'Audio ID and update data are required');
     const updatedAudio = await Audio.findByIdAndUpdate(audioId, data);
     if (!updatedAudio) throw new Error('Audio not found');
     return { updatedAudio }
@@ -187,6 +186,7 @@ class AudioService {
    * @returns {Promise<any>} 返回删除成功与否的boolean
    */
   async deleteAudio(audioId: string): Promise<boolean> {
+    if (!audioId) throw new ParamError(ResponseCode.INVALID_PARAM, 'Audio ID is required');
     const deletedAudio = await Audio.findByIdAndDelete(audioId);
     if (!deletedAudio) throw new Error('Audio not found');
     return true;
