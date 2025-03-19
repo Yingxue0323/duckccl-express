@@ -125,6 +125,50 @@ class UserController {
       return ErrorHandler(res, ResponseCode.DELETE_USER_FAILED, error.message);
     }
   }
+
+  //--------------------------------邀请码相关--------------------------------
+  /**
+   * 生成邀请码
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回邀请码
+   */
+  async generateRedeemCode(req: Request, res: Response): Promise<any> {
+    try {
+      const openId = req.user.openId;
+      const result = await userService.generateRedeemCode(openId);
+      
+      logger.info(`生成邀请码成功: ${result.code}, 用户: ${openId}`);
+      return SuccessHandler(res, { 
+        code: result.code,
+        expiresAt: result.expiresAt 
+      });
+    } catch (error: any) {
+      logger.error(`生成邀请码失败: ${JSON.stringify({ error: error.message })}`);
+      if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);
+      return ErrorHandler(res, ResponseCode.GENERATE_REDEEM_CODE_FAILED, error.message);
+    }
+  }
+
+  /**
+   * 验证并使用邀请码
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回验证结果
+   */
+  async verifyRedeemCode(req: Request, res: Response): Promise<any> {
+    try {
+      const openId = req.user.openId;
+      const { code } = req.body;
+      const result = await userService.verifyRedeemCode(openId, code);
+
+      logger.info(`验证邀请码成功: ${code}, 用户: ${openId}`);
+      return SuccessHandler(res, { result });
+    } catch (error: any) {
+      logger.error(`验证并使用邀请码失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.VERIFY_REDEEM_CODE_FAILED, error.message);
+    }
+  }
 } 
 
 export const userController = new UserController();

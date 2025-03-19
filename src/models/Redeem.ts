@@ -1,15 +1,27 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IRedeem extends Document {
-  inviterOpenId: string; // 邀请者
-  code: string;               // 兑换码
-  duration: number;           // VIP时长（天数）
+interface IUsed {
+  usedByOpenId: string;
+  usedAt: Date;
+}
 
-  // 使用情况
-  isUsed: boolean;           // 是否已使用
-  usedOpenId?: string;  // 使用者
-  usedAt?: Date;             // 使用时间
-  expiresAt: Date;           // 兑换码过期时间
+const UsedSchema = new Schema({
+  usedByOpenId: {
+    type: String,
+    required: true
+  },
+  usedAt: { type: Date, required: true }
+});
+
+export interface IRedeem extends Document {
+  inviterOpenId: string;      // inviter openid
+  code: string;               // redeem code
+  duration: number;           // VIP duration (days), default 7
+  maxUses: number;            // max uses, default 10
+  
+  isUsed: boolean;           // whether the code is used
+  usedBy: IUsed[];           // used by user openid list
+  expiresAt: Date;           // expires at
   
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +30,8 @@ export interface IRedeem extends Document {
 const RedeemSchema = new Schema({
   inviterOpenId: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   code: {
     type: String,
@@ -30,28 +43,33 @@ const RedeemSchema = new Schema({
   duration: {
     type: Number,
     required: true,
-    min: 1
+    default: 7
+  },
+  maxUses: {
+    type: Number,
+    required: true,
+    default: 10
   },
   expiresAt: {
     type: Date,
     required: true,
-    index: true
+    index: true,
+    default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   },
 
   isUsed: {
     type: Boolean,
     default: false
   },
-  usedOpenId: {
-    type: String,
+  usedBy: {
+    type: [UsedSchema],
     sparse: true
   },
-  usedAt: Date
 }, {
   timestamps: true
 });
 
-// 索引优化查询
-RedeemSchema.index({ usedOpenId: 1, expiresAt: 1 }); 
+// embeded multikey index
+RedeemSchema.index({ 'usedBy.usedByOpenId': 1 });
 
 export default mongoose.model<IRedeem>('Redeem', RedeemSchema);

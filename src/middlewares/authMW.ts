@@ -35,19 +35,19 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
     logger.error(`${req.method} ${req.url} - authMW: 解析token失败(jwt) ${error.message}`);
     return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: 解析token失败(jwt)');
   }
-
-  // 3.数据库核对token
-  const isValid = await verifyToken(decoded.openId, token);
-  if (!isValid) {
-    logger.error(`${req.method} ${req.url} - authMW: token过期(数据库)`);
-    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: token过期(数据库)');
-  }
     
   // 3. 查找用户
   const user = await userService.getUserByOpenid(decoded.openId);
   if (!user) {
     logger.error(`${req.method} ${req.url} - authMW: 该token对应用户不存在`);
     return ErrorHandler(res, ResponseCode.USER_NOT_FOUND, 'authMW: 该token对应用户不存在');
+  }
+
+  // 4.数据库核对token
+  const isValid = await verifyToken(decoded.openId, token);
+  if (!isValid) {
+    logger.error(`${req.method} ${req.url} - authMW: token过期(数据库)`);
+    return ErrorHandler(res, ResponseCode.TOKEN_INVALID, 'authMW: token过期(数据库)');
   }
 
   // 将用户信息附加到请求对象

@@ -96,6 +96,8 @@ export enum ResponseCode {
   GET_USER_BY_OPENID_FAILED = 41005,
   UPDATE_USER_FAILED = 41006,
   DELETE_USER_FAILED = 41007,
+  GENERATE_REDEEM_CODE_FAILED = 41008,
+  VERIFY_REDEEM_CODE_FAILED = 41009,
 
   // 单词相关（42xxx）
   GET_WORD_MENUS_FAILED = 42000,
@@ -180,6 +182,8 @@ export const ErrorMessages: Record<ResponseCode, string> = {
   [ResponseCode.GET_USER_BY_OPENID_FAILED]: '通过openid获取用户失败',
   [ResponseCode.UPDATE_USER_FAILED]: '更新用户信息失败',
   [ResponseCode.DELETE_USER_FAILED]: '删除用户失败',
+  [ResponseCode.GENERATE_REDEEM_CODE_FAILED]: '生成邀请码失败',
+  [ResponseCode.VERIFY_REDEEM_CODE_FAILED]: '验证并使用邀请码失败',
 
   // 单词相关
   [ResponseCode.GET_WORD_MENUS_FAILED]: '获取单词菜单失败',

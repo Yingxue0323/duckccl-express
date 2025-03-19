@@ -17,4 +17,8 @@ router.delete('/openid/:openid', authMiddleware, userController.deleteUserByOpen
 // 更新用户sessionkey，由auth中的refreshToken实现
 // 登出时，清除用户sessionkey，由auth中的wechatLogout实现
 
+//--------------------------------邀请码相关--------------------------------
+router.post('/redeem', authMiddleware, userController.generateRedeemCode); // 生成邀请码
+router.post('/redeem/verify', authMiddleware, userController.verifyRedeemCode); // 验证并使用邀请码
+
 export default router; 

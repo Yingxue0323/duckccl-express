@@ -1,12 +1,11 @@
 import { Response } from 'express';
 import { ResponseCode, ErrorMessages } from './constants';
 
-// 根据业务错误码获取对应的 HTTP 状态码
+// Get the HTTP status code corresponding to the business error code
 function getHttpStatus(code: ResponseCode): number {
   if (code == ResponseCode.SUCCESS) {
     return 200;
   }
-
   // Auth (40000 - 41000)
   if (code >= 40000 && code < 41000) {
     return 401;  // Unauthorized
@@ -23,7 +22,6 @@ function getHttpStatus(code: ResponseCode): number {
   if (code >= 50000) {
     return 500;  // Internal Server Error
   }
-
   // default
   return 500;  
 }
