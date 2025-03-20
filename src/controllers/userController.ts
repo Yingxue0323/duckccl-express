@@ -169,6 +169,26 @@ class UserController {
       return ErrorHandler(res, ResponseCode.VERIFY_REDEEM_CODE_FAILED, error.message);
     }
   }
-} 
 
+  //--------------------------------用户反馈相关--------------------------------
+  /**
+   * 提交反馈
+   * @param {Request} req - 请求对象
+   * @param {Response} res - 响应对象
+   * @returns {Promise<any>} 返回反馈结果
+   */
+  async createFeedback(req: Request, res: Response): Promise<any> {
+    try {
+      const openId = req.user.openId;
+      const { content } = req.body;
+      const result = await userService.createFeedback(openId, content);
+
+      logger.info(`提交反馈成功: ${openId}`);
+      return SuccessHandler(res, { result });
+    } catch (error: any) {
+      logger.error(`提交反馈失败: ${JSON.stringify({ error: error.message })}`);
+      return ErrorHandler(res, ResponseCode.CREATE_FEEDBACK_FAILED, error.message);
+    }
+  }
+} 
 export const userController = new UserController();

@@ -7,6 +7,7 @@ import { ResponseCode } from '../utils/constants';
 import Redeem from '../models/Redeem';
 import mongoose from 'mongoose';
 import schedule from 'node-schedule';
+import Feedback, { IFeedback } from '../models/Feedback';
 
 class UserService {
   constructor() {
@@ -250,6 +251,19 @@ class UserService {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+  }
+
+  /**
+   * 提交反馈
+   * @param {string} openId - 用户ID
+   * @param {string} content - 反馈内容
+   * @returns {Promise<boolean>} 返回提交成功与否
+   */
+  async createFeedback(openId: string, content: string): Promise<boolean> {
+    if(!openId || !content) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId and content are required');
+    const feedback = await Feedback.create({ userOpenId: openId, content });
+    if (!feedback) throw new Error('Create feedback failed');
+    return true;
   }
 } 
 
