@@ -24,6 +24,7 @@ jobs:
       env:
         NODE_ENV: development
         PORT: 3000
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
         ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
         WX_APPID: ${{ secrets.WX_APPID }}
         WX_SECRET: ${{ secrets.WX_SECRET }}
@@ -34,7 +35,6 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         S3_REGION: ${{ secrets.S3_REGION }}
         S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
       run: |
@@ -64,6 +64,7 @@ jobs:
         echo ".env文件创建完成，开始设置权限🔒..."
         
         # 设置权限
+        sudo chown ubuntu:ubuntu /var/www/koala-ccl/.env
         sudo chmod 600 /var/www/koala-ccl/.env
         sudo chmod -R 755 /var/www/koala-ccl/dist
         sudo chown -R www-data:www-data /var/www/koala-ccl/dist/public

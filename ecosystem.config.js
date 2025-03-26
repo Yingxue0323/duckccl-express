@@ -3,7 +3,6 @@ module.exports = {
       name: 'koala',
       script: './dist/app.js',
       instances: 1,
-      autorestart: true,
       watch: false,
       exec_mode: 'cluster',
       env: {
@@ -12,7 +11,5 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production'
       },
-      max_restarts: 5,          // limit max restarts
-      merge_logs: true,
     }]
   };
