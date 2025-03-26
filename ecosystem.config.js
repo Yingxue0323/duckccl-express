@@ -17,8 +17,6 @@ module.exports = {
       },
       max_restarts: 5,          // limit max restarts
       restart_delay: 4000,
-      error_file: '/var/www/logs/koala-error.log',
-      out_file: '/var/www/logs/koala-out.log',
       merge_logs: true,
     }]
   };
