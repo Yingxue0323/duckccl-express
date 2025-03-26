@@ -2,7 +2,7 @@ module.exports = {
     apps: [{
       name: 'koala',
       script: './dist/app.js',
-      instances: 2,
+      instances: 1,
       autorestart: true,
       watch: false,
       exec_mode: 'cluster',
