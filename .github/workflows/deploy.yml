@@ -71,6 +71,8 @@ jobs:
         sudo chmod 600 /var/www/koala-ccl/.env
         sudo chmod -R 755 /var/www/koala-ccl/dist
         sudo chown -R www-data:www-data /var/www/koala-ccl/dist/public
+        sudo chown -R ubuntu:ubuntu /var/www/logs
+        sudo chmod 755 /var/www/logs
         echo "权限设置完成，开始检查配置文件和磁盘空间🔍 ..."
 
         # if pm2 list | grep -q "koala"; then
