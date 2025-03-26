@@ -71,8 +71,6 @@ jobs:
         sudo chmod 600 /var/www/koala-ccl/.env
         sudo chmod -R 755 /var/www/koala-ccl/dist
         sudo chown -R www-data:www-data /var/www/koala-ccl/dist/public
-        sudo chown -R ubuntu:ubuntu /var/www/logs
-        sudo chmod 755 /var/www/logs
         echo "权限设置完成，开始检查配置文件和磁盘空间🔍 ..."
 
         # if pm2 list | grep -q "koala"; then
@@ -132,7 +130,6 @@ jobs:
           # 检查是否有错误状态
           if pm2 list | grep "koala" | grep "errored" > /dev/null; then
             echo "❌ 应用启动失败"
-            pm2 logs koala --lines 50
             exit 1
           fi
           
@@ -144,7 +141,6 @@ jobs:
         # 检查是否超时
         if [ $attempt -gt $max_attempts ]; then
           echo "❌ 应用启动超时"
-          pm2 logs koala --lines 50
           exit 1
         fi
 
