@@ -6,9 +6,6 @@ module.exports = {
       autorestart: true,
       watch: false,
       exec_mode: 'cluster',
-      wait_ready: true,
-      listen_timeout: 60000,
-      kill_timeout: 5000,
       env: {
         NODE_ENV: 'development'
       },
@@ -16,7 +13,6 @@ module.exports = {
         NODE_ENV: 'production'
       },
       max_restarts: 5,          // limit max restarts
-      restart_delay: 4000,
       merge_logs: true,
     }]
   };

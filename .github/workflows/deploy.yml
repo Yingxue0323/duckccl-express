@@ -56,11 +56,7 @@ jobs:
         sudo rsync -av package.json ecosystem.config.js tsconfig.json /var/www/koala-ccl/
         echo "同步完成，开始检查依赖更新🔍..."
 
-        # 只在 package.json 变化时更新依赖
-        if [ -f "/var/www/koala-ccl/package.json" ] && ! cmp -s package.json /var/www/koala-ccl/package.json; then
-          cd /var/www/koala-ccl
-          npm install  # 会自动生成新的 package-lock.json
-        fi
+        npm i
         echo "依赖更新完成，开始创建.env文件🍃..."
 
         # 创建环境变量文件
