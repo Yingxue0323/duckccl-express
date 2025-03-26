@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build and Deploy
+    - name: Build
       env:
         NODE_ENV: development
         PORT: 3000
@@ -71,12 +71,83 @@ jobs:
         sudo chmod 600 /var/www/koala-ccl/.env
         sudo chmod -R 755 /var/www/koala-ccl/dist
         sudo chown -R www-data:www-data /var/www/koala-ccl/dist/public
-        echo "权限设置完成，开始重启应用🔄..."
+        echo "权限设置完成，开始检查配置文件和磁盘空间🔍 ..."
 
-        if pm2 list | grep -q "koala"; then
-          pm2 reload koala --update-env
-        else
-          pm2 start ecosystem.config.js
+        # if pm2 list | grep -q "koala"; then
+        #   pm2 reload koala --update-env
+        # else
+        #   pm2 start ecosystem.config.js
+        # fi
+        # pm2 save
+        # echo "应用重启完成✅"
+
+    - name: Pre-deploy checks
+      run: |
+        # 检查必要文件
+        for file in dist/app.js ecosystem.config.js; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          fi
+        done
+
+        # 检查磁盘空间
+        if [ $(df -P /var/www | awk 'NR==2 {print $5}' | sed 's/%//') -gt 90 ]; then
+          echo "❌ Disk space critical: $(df -P /var/www | awk 'NR==2 {print $5}' | sed 's/%//')%"
         fi
+
+        # 检查内存使用
+        free_mem=$(free | awk '/Mem:/ {print $4}')
+        if [ $free_mem -lt 524288 ]; then  # 512MB in KB
+          echo "⚠️ Low memory warning: $free_mem KB left"
+        fi
+        
+        echo "检查配置文件完成，开始重启应用🔄..."
+        
+    - name: restart
+      run: | 
+        # 优雅停止现有应用
+        if pm2 list | grep -q "koala"; then
+          echo "🛑 正在停止现有应用..."
+          pm2 stop koala
+          pm2 delete koala
+        fi
+
+        # 启动新应用
+        echo "🚀 正在启动应用..."
+        pm2 start ecosystem.config.js
+
+        # 等待应用启动并检查状态
+        echo "⏳ 等待应用启动..."
+        max_attempts=30
+        attempt=1
+        while [ $attempt -le $max_attempts ]; do
+          if pm2 list | grep "koala" | grep "online" > /dev/null; then
+            echo "✅ 应用成功启动!"
+            break
+          fi
+          
+          # 检查是否有错误状态
+          if pm2 list | grep "koala" | grep "errored" > /dev/null; then
+            echo "❌ 应用启动失败"
+            pm2 logs koala --lines 50
+            exit 1
+          fi
+          
+          echo "⏳ 等待中... ($attempt/$max_attempts)"
+          sleep 2
+          attempt=$((attempt + 1))
+        done
+
+        # 检查是否超时
+        if [ $attempt -gt $max_attempts ]; then
+          echo "❌ 应用启动超时"
+          pm2 logs koala --lines 50
+          exit 1
+        fi
+
+        # 保存 PM2 配置
+        echo "💾 保存 PM2 配置..."
         pm2 save
-        echo "应用重启完成✅"
+
+        echo "✅ 部署完成"
