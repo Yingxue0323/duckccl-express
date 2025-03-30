@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { generateUniqueUserCode } from '../utils/userCodeGenerator';
 import { LANGUAGES, LanguageCode,
-         LOGIN_TYPE, LoginType } from '../utils/constants';
+         LOGIN_TYPE, LoginType, ROLES, Role } from '../utils/constants';
 
 interface IFavoriteCount {
   word: number;
@@ -18,6 +18,7 @@ export interface IUser extends Document {
   // VIP Status
   isVIP: boolean;
   vipExpireAt?: Date;
+  role: Role;
 
   // 登陆相关
   sessionKey?: string;        // 小程序登录凭证Only
@@ -68,6 +69,12 @@ const UserSchema = new Schema({
   vipExpireAt: {
     type: Date,
     default: null
+  },
+  role: {
+    type: String,
+    enum: Object.values(ROLES),
+    required: true,
+    default: ROLES.USER
   },
 
   // 登陆相关

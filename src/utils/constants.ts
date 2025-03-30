@@ -20,6 +20,12 @@ export const LANGUAGES = {
 
 export type LanguageCode = typeof LANGUAGES[keyof typeof LANGUAGES];
 
+export const ROLES = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+} as const;
+
+export type Role = typeof ROLES[keyof typeof ROLES];
 
 // 单词/练习分类(共13类，单词占7类，练习没有others类，12类)
 export const CATEGORIES = {

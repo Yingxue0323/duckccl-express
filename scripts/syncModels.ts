@@ -21,18 +21,18 @@ async function syncAllModels() {
 
     // 所有模型的列表
     const models = [
-      Exercise,
-      ExerciseFavorite,
-      ExerciseLearned,
+      // Exercise,
+      // ExerciseFavorite,
+      // ExerciseLearned,
       Redeem,
     //   SaticContent,
       User,
       UserPractice,
-      Audio,
-      AudioFavorite,
-      Word,
-      WordFavorite,
-      WordLearning,
+      // Audio,
+      // AudioFavorite,
+      // Word,
+      // WordFavorite,
+      // WordLearning,
     ];
 
     // 同步每个模型

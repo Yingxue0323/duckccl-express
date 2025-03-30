@@ -71,5 +71,6 @@ const RedeemSchema = new Schema({
 
 // embeded multikey index
 RedeemSchema.index({ 'usedBy.usedByOpenId': 1 });
+RedeemSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model<IRedeem>('Redeem', RedeemSchema);

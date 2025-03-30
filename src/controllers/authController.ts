@@ -10,12 +10,7 @@ class AuthController {
   async wechatLogin(req: Request, res: Response): Promise<any> {
     try {
       const { code } = req.body;
-      // 可能带有token
-      let withToken = null;
-      if (req.headers.authorization?.split(' ')[1]) {
-        withToken = req.headers.authorization?.split(' ')[1];
-      }
-      const { user, token } = await authService.wechatLogin(code, withToken);
+      const { user, token } = await authService.wechatLogin(code);
 
       logger.info(`微信登录成功: ${user.openId}`);
       return SuccessHandler(res, { user, token });

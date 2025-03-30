@@ -136,7 +136,8 @@ class UserController {
   async generateRedeemCode(req: Request, res: Response): Promise<any> {
     try {
       const openId = req.user.openId;
-      const result = await userService.generateRedeemCode(openId);
+      const { duration } = req.body;
+      const result = await userService.generateRedeemCode(openId, duration);
       
       logger.info(`生成邀请码成功: ${result.code}, 用户: ${openId}`);
       return SuccessHandler(res, { 

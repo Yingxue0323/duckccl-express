@@ -11,5 +11,12 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production'
       },
+    },
+    {
+      name: 'cleanup-task',
+      script: './dist/tasks/cleanup.js',
+      cron_restart: '0 0 * * 0',
+      watch: false,
+      autorestart: false
     }]
   };
