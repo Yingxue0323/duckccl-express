@@ -5,7 +5,7 @@ export interface IAudioFavorite extends Document {
   openId: string;
   audioId: string;
   exerciseTitle: string;
-  exerciseSeq: number;
+  exerciseSeq: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -26,7 +26,7 @@ const AudioFavoriteSchema = new Schema({
     required: true
   },
   exerciseSeq: {
-    type: Number,
+    type: String,
     required: true
   }
 }, {

@@ -55,7 +55,9 @@ class AudioFavService {
     // 如果不存在，则获取相关练习信息，新增音频收藏
     if (!existingFavorite) {
       const audio = await Audio.findById(audioId);
-      const exercise = await Exercise.findById(audio?.exerciseId);
+      if (!audio) throw new Error('Related audio not found, please verify the audioId');
+      
+      const exercise = await Exercise.findById(audio.exerciseId);
       if (!exercise) throw new Error('Related exercise not found, please verify the audioId');
       
       await AudioFavorite.create({ 
