@@ -1,6 +1,5 @@
 import WordFavorite from '../models/WordFavorite';
 import User from '../models/User';
-import { wordService } from './wordService';
 
 class WordFavService {
  /**
@@ -35,10 +34,11 @@ class WordFavService {
   */
   async favoriteWord(openId: string, wordId: string): Promise<{isWordFavorite: boolean}> {
     // 检查是否已存在收藏
-    const existingFavorite = await WordFavorite.findOne({openId, wordId});
-    // 如果不存在，则新增收藏
+    const existingFavorite = await WordFavorite.findOne({openId: openId, wordId: wordId});
+    // 如果不存在，则新增收藏，更新用户收藏数+1
     if (!existingFavorite) {
-        await WordFavorite.create({ openId, wordId });
+      await WordFavorite.create({ openId: openId, wordId: wordId });
+      await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.word": 1 } });
     }
 
     return { isWordFavorite: true };
@@ -51,12 +51,9 @@ class WordFavService {
    * @returns {Promise<{isFavorite: boolean}>} 返回删除后的收藏状态
    */
   async unfavoriteWord(openId: string, wordId: string): Promise<{isWordFavorite: boolean}> {
-    // 检查是否已存在收藏
-    const favoriteStatus = await WordFavorite.findOne({ openId, wordId });
     // 如果存在，则删除收藏
-    if (favoriteStatus) {
-      await WordFavorite.deleteOne({ _id: favoriteStatus._id });
-    }
+    await WordFavorite.findOneAndDelete({ openId: openId, wordId: wordId });
+    await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.word": -1 } });
     return { isWordFavorite: false };
   }
 }

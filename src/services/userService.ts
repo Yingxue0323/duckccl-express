@@ -133,7 +133,7 @@ class UserService {
       inviterOpenId: openId, 
       code, 
       duration: duration,
-      expiresAt 
+      expiresAt: expiresAt
     });
     return { code, expiresAt };
   }
@@ -153,7 +153,7 @@ class UserService {
     });
     
     if (!redeem) throw new Error('Invalid or expired redeem code');
-    if(redeem.usedBy.some(used => used.usedByOpenId === openId)) throw new Error('Redeem code already used by this user');
+    if(redeem.isUsed) throw new Error('Redeem code already used');
 
     // 被邀请者
     const invitee = await User.findOne({ openId: openId });
@@ -178,8 +178,7 @@ class UserService {
     await Redeem.findOneAndUpdate(
       { code: code.toUpperCase() },
       { 
-        $push: { usedBy: { usedByOpenId: openId, usedAt: new Date() } },
-        $set: { isUsed: redeem.usedBy.length + 1 >= redeem.maxUses }  // 最大使用次数限制
+        $set: { isUsed: true, usedByOpenId: openId, usedAt: new Date() }
       }
     );
 

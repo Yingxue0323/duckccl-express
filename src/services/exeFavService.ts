@@ -34,11 +34,11 @@ class ExeFavService {
   */
   async favoriteExercise(openId: string, exerciseId: string): Promise<{isExeFavorite: boolean}> {
     // 检查是否已存在收藏
-    const existingFavorite = await ExerciseFavorite.findOne({openId, exerciseId});
+    const existingFavorite = await ExerciseFavorite.findOne({openId: openId, exerciseId: exerciseId});
     // 如果不存在，则新增收藏，更新用户收藏数+1
     if (!existingFavorite) {
-        await ExerciseFavorite.create({ openId, exerciseId });
-        await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.exercise": 1 } });
+        await ExerciseFavorite.create({ openId: openId, exerciseId: exerciseId });
+        await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.exercise": 1 } });
     }
 
     return { isExeFavorite: true };
@@ -51,13 +51,9 @@ class ExeFavService {
    * @returns {Promise<{isExeFavorite: boolean}>} 返回是否取消收藏
    */
   async unfavoriteExercise(openId: string, exerciseId: string): Promise<{isExeFavorite: boolean}> {
-    // 检查是否已存在收藏
-    const favoriteStatus = await ExerciseFavorite.findOne({ openId, exerciseId });
-    // 如果存在，则删除收藏，更新用户收藏数-1
-    if (favoriteStatus) {
-      await ExerciseFavorite.deleteOne({ _id: favoriteStatus._id });
-      await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.exercise": -1 } });
-    }
+    // 如果存在，则删除收藏
+    await ExerciseFavorite.findOneAndDelete({ openId: openId, exerciseId: exerciseId });
+    await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.exercise": -1 } });
     return { isExeFavorite: false };
   }
 }

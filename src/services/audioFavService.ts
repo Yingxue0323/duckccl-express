@@ -1,6 +1,5 @@
 import AudioFavorite from '../models/AudioFavorite';
 import Exercise from '../models/Exercise';
-import User from '../models/User';
 import Audio from '../models/Audio';
 
 class AudioFavService {
@@ -40,7 +39,7 @@ class AudioFavService {
   * @returns {Promise<boolean>} 返回是否收藏
   */
   async checkFavStatusByAudioId(openId: string, audioId: string): Promise<boolean> {
-    const favoriteStatus = await AudioFavorite.findOne({ openId, audioId });
+    const favoriteStatus = await AudioFavorite.findOne({ openId: openId, audioId: audioId });
     return favoriteStatus ? true : false;
   }
 
@@ -52,14 +51,19 @@ class AudioFavService {
   */
   async favoriteAudio(openId: string, audioId: string): Promise<{isAudioFavorite: boolean}> {
     // 检查是否已存在收藏
-    const existingFavorite = await AudioFavorite.findOne({openId, audioId});
-    // 如果不存在，则新增收藏，更新用户收藏数+1
+    const existingFavorite = await AudioFavorite.findOne({openId: openId, audioId: audioId});
+    // 如果不存在，则获取相关练习信息，新增音频收藏
     if (!existingFavorite) {
       const audio = await Audio.findById(audioId);
       const exercise = await Exercise.findById(audio?.exerciseId);
       if (!exercise) throw new Error('Related exercise not found, please verify the audioId');
-      await AudioFavorite.create({ openId, audioId, exerciseTitle: exercise?.title, exerciseSeq: exercise?.seq });
-      await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": 1 } });
+      
+      await AudioFavorite.create({ 
+        openId: openId, 
+        audioId: audioId, 
+        exerciseTitle: exercise.title, 
+        exerciseSeq: exercise.seq 
+      });
     }
 
     return { isAudioFavorite: true };
@@ -72,13 +76,8 @@ class AudioFavService {
    * @returns {Promise<{isAudioFavorite: boolean}>} 返回是否取消收藏
    */
   async unfavoriteAudio(openId: string, audioId: string): Promise<{isAudioFavorite: boolean}> {
-    // 检查是否已存在收藏
-    const favoriteStatus = await AudioFavorite.findOne({ openId, audioId });
-    // 如果存在，则删除收藏，更新用户收藏数-1
-    if (favoriteStatus) {
-      await AudioFavorite.deleteOne({ _id: favoriteStatus._id });
-      await User.findOneAndUpdate({ openId }, { $inc: { "favoriteCount.audio": -1 } });
-    }
+    // 如果存在，则删除收藏
+    await AudioFavorite.findOneAndDelete({ openId, audioId });
     return { isAudioFavorite: false };
   }
 }
