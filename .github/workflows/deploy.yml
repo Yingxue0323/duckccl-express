@@ -60,6 +60,7 @@ jobs:
         echo "依赖更新完成，开始创建.env文件🍃..."
 
         # 创建环境变量文件
+        cd /var/www/koala-ccl
         env | grep -E '^(NODE_ENV|PORT|MONGODB_URI|WX_|JWT_|ADMIN_|AWS_|S3_)' > /var/www/koala-ccl/.env
         echo ".env文件创建完成，开始设置权限🔒..."
         
@@ -103,11 +104,13 @@ jobs:
         
     - name: restart
       run: | 
+        cd /var/www/koala-ccl
         # 优雅停止现有应用
         if pm2 list | grep -q "koala"; then
           echo "🛑 正在停止现有应用..."
           pm2 stop koala
           pm2 delete koala
+          sleep 5
         fi
 
         # 启动新应用

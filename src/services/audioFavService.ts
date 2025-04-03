@@ -11,7 +11,7 @@ class AudioFavService {
   async getAllFavoriteAudios(openId: string): Promise<{count: number, ids: string[]}> {
     const favoriteList = await AudioFavorite.find({openId: openId})
       .sort({ createdAt: -1 })
-      .select('audioId').lean();
+      .select('audioId exerciseTitle exerciseSeq').lean();
     return {
       count: favoriteList.length,
       ids: favoriteList.map(item => item.audioId)
