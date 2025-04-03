@@ -39,25 +39,33 @@ class AudioService {
     const skip = (page - 1) * page_size; // 计算跳过的记录数
 
     // 并行异步
-    const [audios, favoriteAudios, isUserVIP] = await Promise.all([
+    const [audios, favoriteResult, isUserVIP] = await Promise.all([
       Audio.find()
         .skip(skip)
         .limit(page_size)
-        .select('exerciseId order language text url trans_text trans_url')
+        .select('language text url trans_text trans_url')
         .lean(),
-      audioFavService.getAllFavoriteAudios(openId), // 返回收藏的audioId列表
+      audioFavService.getAllFavoriteAudios(openId), // 返回收藏的audioId, seq, title 列表
       userService.checkVIPStatus(openId),
     ]);
-    const favoriteSet = new Set(favoriteAudios.ids);
+
+    // 创建收藏音频的Map，方便查找和获取额外信息
+    const favoriteMap = new Map(
+      favoriteResult.ids.map(item => [
+        item.audioId,
+        {
+          exerciseTitle: item.exerciseTitle,
+          exerciseSeq: item.exerciseSeq
+        }
+      ])
+    );
 
     // 根据 favorite 筛选音频
     let list = audios;
-    if (favorite == true) {
-      list = audios.filter(audio => favoriteSet.has(audio._id.toString()));
-    } else if (favorite == false) {
-      list = audios.filter(audio => !favoriteSet.has(audio._id.toString()));
-    } else { // 默认不筛选
-      list = audios;
+    if (favorite === true) {
+      list = audios.filter(audio => favoriteMap.has(audio._id.toString()));
+    } else if (favorite === false) {
+      list = audios.filter(audio => !favoriteMap.has(audio._id.toString()));
     }
 
     // 获取所有VIPOnly的练习
@@ -66,30 +74,44 @@ class AudioService {
 
     const audioList = list.map((audio: any) => {
       const audioId = audio._id.toString();
+      const isFavorite = favoriteMap.has(audioId);
+      const favoriteInfo = favoriteMap.get(audioId);
+    
       // 如果用户不是VIP，并且音频对应的练习是VIPOnly，则不显示音频
       if (!isUserVIP && VIPExercisesSet.has(audio.exerciseId)) {
         return {
           _id: audioId,
-          is_audio_favorite: favoriteSet.has(audioId),
+          is_audio_favorite: isFavorite,
           can_play: false,
+          // 如果是收藏的音频，添加额外信息
+          ...(isFavorite && {
+            exerciseTitle: favoriteInfo?.exerciseTitle,
+            exerciseSeq: favoriteInfo?.exerciseSeq
+          })
         };
       }
+
       return {
         ...audio,
+        is_audio_favorite: isFavorite,
         can_play: true,
-        is_audio_favorite: favoriteSet.has(audioId),
+        // 如果是收藏的音频，添加额外信息
+        ...(isFavorite && {
+          exerciseTitle: favoriteInfo?.exerciseTitle,
+          exerciseSeq: favoriteInfo?.exerciseSeq
+        })
       };
     });
+
     // 返回带统计值的
     return {
       current_page: page,
       total_pages: Math.ceil(audios.length / page_size),
       audio_count: audios.length,
-      favorite_count: favoriteAudios.count,
+      favorite_count: favoriteResult.count,
       audios: audioList,
     };
   }
-
   /**
    * 获取练习中所有音频，exercise -> 进入，无需vip check
    * @param {string} openId - 用户ID

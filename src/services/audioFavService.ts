@@ -8,13 +8,16 @@ class AudioFavService {
   * @param {string} openId - 用户ID
   * @returns {any} 返回收藏id列表和数量
   */
-  async getAllFavoriteAudios(openId: string): Promise<{count: number, ids: string[]}> {
+  async getAllFavoriteAudios(openId: string): Promise<{count: number, ids: {audioId: string, exerciseTitle: string, exerciseSeq: string}[]}> {
     const favoriteList = await AudioFavorite.find({openId: openId})
       .sort({ createdAt: -1 })
       .select('audioId exerciseTitle exerciseSeq').lean();
     return {
       count: favoriteList.length,
-      ids: favoriteList.map(item => item.audioId)
+      ids: favoriteList.map(item => ({
+        audioId: item.audioId, 
+        exerciseTitle: item.exerciseTitle, 
+        exerciseSeq: item.exerciseSeq}))
     }
   }
 
