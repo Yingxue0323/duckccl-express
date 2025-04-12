@@ -6,6 +6,7 @@ import logger from '../utils/logger';
 import { config } from '../configs/index';
 import jwt from 'jsonwebtoken';
 import { verifyToken } from '../utils/jwt';
+import { Request, OptionalAuthRequest } from '../types/express';
 
 // 扩展 Request 类型
 declare global {
@@ -19,7 +20,7 @@ declare global {
 }
 
 // 认证中间件
-export const authMiddleware = async (req: ExpressRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   // 1. 从请求头获取 token
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
@@ -60,6 +61,54 @@ export const authMiddleware = async (req: ExpressRequest, res: Response, next: N
   } catch (error: any) {
     logger.error(`${req.method} ${req.url} - authMW: 用户信息附加失败 ${error.message}`);
     return ErrorHandler(res, ResponseCode.TOKEN_INVALID, error.message);
+  }
+};
+
+// 可选认证中间件
+export const optionalAuthMiddleware = async (req: OptionalAuthRequest, res: Response, next: NextFunction) => {
+  // 1. 从请求头获取 token
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  // 如果没有token，设置默认值并继续
+  if (!token) {
+    req.user = undefined;
+    req.isUserVIP = false;
+    logger.info(`${req.method} ${req.url} - optionalAuthMW: 未携带token，以访客身份继续`);
+    return next();
+  }
+
+  try {
+    // 2. jwt验证 token
+    const decoded = jwt.verify(token, config.jwt.secret) as { openId: string };
+    
+    // 3. 查找用户
+    const user = await userService.getUserByOpenid(decoded.openId);
+    if (!user) {
+      req.user = undefined;
+      req.isUserVIP = false;
+      return next();
+    }
+
+    // 4.数据库核对token
+    const isValid = await verifyToken(decoded.openId, token);
+    if (!isValid) {
+      req.user = undefined;
+      req.isUserVIP = false;
+      return next();
+    }
+
+    // 将用户信息附加到请求对象
+    req.user = user;
+    const isUserVIP = await userService.checkVIPStatus(user.openId);
+    req.isUserVIP = isUserVIP;
+    logger.info(`${req.method} ${req.url} - optionalAuthMW: token有效，用户已认证`);
+    next();
+  } catch (error: any) {
+    // token无效的情况下，以访客身份继续
+    req.user = undefined;
+    req.isUserVIP = false;
+    logger.info(`${req.method} ${req.url} - optionalAuthMW: token无效，以访客身份继续`);
+    next();
   }
 };
 

@@ -73,7 +73,12 @@ class ExerciseController {
         ? Boolean(req.query.favorite)
         : undefined;
 
-      const result = await exerciseService.getAllExercisesByCat(req.user.openId, page, page_size, category, source, learning_status, favorite);
+      let result;
+      if (req.user) {
+        result = await exerciseService.getAllExercisesByCat(req.user.openId, page, page_size, category, source, learning_status, favorite);
+      } else {
+        result = await exerciseService.getAllExercisesByCatGuest(page, page_size, category, source, learning_status, favorite);
+      }
 
       logger.info(`获取练习列表成功: ${result.exercise_count}个练习, 当前页: ${page}, 每页: ${page_size}`);
       return SuccessHandler(res, { result });

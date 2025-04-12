@@ -120,6 +120,39 @@ class ExerciseService {
     };
   }
 
+  async getAllExercisesByCatGuest(page?: number, page_size?: number, 
+    category?: string[], source?: string, learning_status?: string, favorite?: boolean): Promise<any> {
+     // 页数处理
+     if (!page) page = 1;
+     if (!page_size) page_size = 25;
+     const skip = (page - 1) * page_size; // 计算跳过的记录数
+ 
+     // 参数处理
+     const query: any = {};
+     if (category) query.category = { $in: category };
+     if (source) query.source = source;
+ 
+     // 1. 获取筛选后的练习们详情，所有已学、收藏列表，用户VIP状态
+     const exercises = await 
+       Exercise.find(query)
+         .sort({ seq: 1 })
+         .skip(skip)
+         .limit(page_size)
+         .select('_id seq title category source isVIPOnly')
+         .lean();
+ 
+     // 5. 最终返回带统计值的
+     return {
+       current_page: page,
+       total_pages: Math.ceil(exercises.length / page_size),
+       exercise_count: exercises.length,
+       learned_count: 0,
+       favorite_count: 0,
+       is_user_vip: false,
+       exercises: exercises,
+     };
+   }
+
   /**
    * 获取单个练习详情
    * @param {string} exerciseId - 练习ID
