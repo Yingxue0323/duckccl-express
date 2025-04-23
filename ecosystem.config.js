@@ -17,6 +17,14 @@ module.exports = {
       script: './dist/tasks/cleanup.js',
       cron_restart: '0 0 * * 0',
       watch: false,
-      autorestart: false
+      autorestart: false,
+      env: {
+        NODE_ENV: 'development',
+        MONGODB_URI: process.env.MONGODB_URI
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        MONGODB_URI: process.env.MONGODB_URI
+      }
     }]
   };

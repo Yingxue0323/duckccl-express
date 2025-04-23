@@ -119,23 +119,21 @@ class UserService {
   /**
    * 生成邀请码
    * @param {string} openId - 用户ID
-   * @returns {Promise<{code: string, expiresAt: Date}>} 返回邀请码和过期时间
+   * @returns {Promise<{code: string}>} 返回邀请码
    */
-  async generateRedeemCode(openId: string, duration: number): Promise<{code: string, expiresAt: Date}> {
+  async generateRedeemCode(openId: string, duration: number): Promise<{code: string}> {
     if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOne({ openId });
     if(!user) throw new Error('User not found');
     if(user.role !== ROLES.ADMIN) throw new Error('User is not admin');
     
     const code = await this.randomCode();
-    const expiresAt = new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
     await Redeem.create({ 
       inviterOpenId: openId, 
       code, 
-      duration: duration,
-      expiresAt: expiresAt
+      duration: duration
     });
-    return { code, expiresAt };
+    return { code };
   }
 
   /**
@@ -149,7 +147,7 @@ class UserService {
 
     const redeem = await Redeem.findOne({ 
       code: code.toUpperCase(),
-      expiresAt: { $gt: new Date() }  // 直接在查询时过滤过期的
+      isUsed: false
     });
     
     if (!redeem) throw new Error('Invalid or expired redeem code');

@@ -5,7 +5,7 @@ import { authMiddleware, optionalAuthMiddleware } from '../middlewares/authMW';
 const router = Router();
 
 // ----------------------------------------- 菜单 -----------------------------------------
-router.get('/menus', authMiddleware, exerciseController.getMenus); //获取菜单项目
+router.get('/menus', exerciseController.getMenus); //获取菜单项目
 
 // ----------------------------------------- 基础curd -----------------------------------------
 router.post('/',  exerciseController.createExercise);    // 创建练习, TODO: admin only

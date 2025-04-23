@@ -4,7 +4,6 @@ export interface IRedeem extends Document {
   inviterOpenId: string;      // inviter openid
   code: string;               // redeem code
   duration: number;           // VIP duration (days)
-  expiresAt: Date;           // expires at
   
   isUsed: boolean;           // whether the code is used
   usedByOpenId: string;
@@ -29,10 +28,6 @@ const RedeemSchema = new Schema({
   },
   duration: {
     type: Number,
-    required: true
-  },
-  expiresAt: {
-    type: Date,
     required: true
   },
 

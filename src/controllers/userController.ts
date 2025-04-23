@@ -140,10 +140,7 @@ class UserController {
       const result = await userService.generateRedeemCode(openId, duration);
       
       logger.info(`生成邀请码成功: ${result.code}, 用户: ${openId}`);
-      return SuccessHandler(res, { 
-        code: result.code,
-        expiresAt: result.expiresAt 
-      });
+      return SuccessHandler(res, { code: result.code });
     } catch (error: any) {
       logger.error(`生成邀请码失败: ${JSON.stringify({ error: error.message })}`);
       if (error instanceof ParamError) return ErrorHandler(res, error.code, error.message);

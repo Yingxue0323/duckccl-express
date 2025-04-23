@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import Token from '../models/Token';
 import Redeem from '../models/Redeem';
+import dotenv from 'dotenv';
+
+// 加载环境变量
+dotenv.config();
 
 async function cleanup() {
   try {
@@ -11,7 +15,7 @@ async function cleanup() {
       expiresAt: { $lt: new Date() }
     });
     const redeemResult = await Redeem.deleteMany({
-      expiresAt: { $lt: new Date() }
+      isUsed: true
     });
     
     console.log(`清理完成: 删除了 ${tokenResult.deletedCount} 条token过期记录`);
