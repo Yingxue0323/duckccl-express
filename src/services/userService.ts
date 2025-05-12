@@ -165,11 +165,13 @@ class UserService {
         });
     } else { // 如果被邀请者是VIP, 则更新vipExpireAt字段
       // 在原来基础上加天数
-      const inviteeVIPExpireAt = invitee.vipExpireAt?.getTime() ?? 0;
-      await this.updateUserByOpenid(openId, 
-        {
-          vipExpireAt: new Date(inviteeVIPExpireAt + redeem.duration * 24 * 60 * 60 * 1000) 
-        });
+      const now = Date.now();
+      const baseTime = Math.max(now, invitee.vipExpireAt?.getTime() ?? 0);
+      const newExpireAt = new Date(baseTime + redeem.duration * 24 * 60 * 60 * 1000);
+
+      await this.updateUserByOpenid(openId, {
+        vipExpireAt: newExpireAt
+      });
     }
     
     // 更新邀请码使用记录

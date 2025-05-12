@@ -16,7 +16,6 @@ export interface IUser extends Document {
   lang: LanguageCode;
   
   // VIP Status
-  isVIP: boolean;
   vipExpireAt?: Date;
   role: Role;
 
@@ -62,10 +61,6 @@ const UserSchema = new Schema({
   },
 
   // VIP Status
-  isVIP: {
-    type: Boolean,
-    default: false
-  },
   vipExpireAt: {
     type: Date,
     default: null
@@ -111,6 +106,10 @@ UserSchema.pre('save', async function(next) {
     this.nickname = `Koala${this.userCode.slice(-4)}`;
   }
   next();
+});
+
+UserSchema.virtual('isVIP').get(function () {
+  return !!(this.vipExpireAt && this.vipExpireAt.getTime() > Date.now());
 });
 
 UserSchema.virtual('formattedUserCode').get(function() {
