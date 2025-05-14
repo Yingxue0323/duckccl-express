@@ -76,10 +76,7 @@ class UserService {
     if(!openId) throw new ParamError(ResponseCode.INVALID_PARAM, 'openId is required');
     const user = await User.findOne({ openId });
     const now = new Date().getTime();
-    if (user?.isVIP && user.vipExpireAt && user.vipExpireAt.getTime() > now) {
-      return true;
-    }
-    return false;
+    return !!(user?.vipExpireAt && user.vipExpireAt.getTime() > now);
   }
   
   // 清除会话(登出)，由auth中的wechatLogout实现
@@ -157,19 +154,21 @@ class UserService {
     const invitee = await User.findOne({ openId: openId });
     if (!invitee) throw new Error('Invitee not found');
 
-    if (!invitee.isVIP) { // 如果被邀请者不是VIP, 则更新isVIP字段和vipExpireAt字段
+    const now = Date.now();
+    const isCurrentlyVIP = !!(invitee.vipExpireAt && invitee.vipExpireAt.getTime() > now);
+
+    if (!isCurrentlyVIP) { // 如果用户当前不是VIP
       await this.updateUserByOpenid(openId, 
         { 
-          isVIP: true,
-          vipExpireAt: new Date(Date.now() + redeem.duration * 24 * 60 * 60 * 1000) 
+          vipExpireAt: new Date(now + redeem.duration * 24 * 60 * 60 * 1000) 
         });
-    } else { // 如果被邀请者是VIP, 则更新vipExpireAt字段
-      // 在原来基础上加天数
-      const inviteeVIPExpireAt = invitee.vipExpireAt?.getTime() ?? 0;
-      await this.updateUserByOpenid(openId, 
-        {
-          vipExpireAt: new Date(inviteeVIPExpireAt + redeem.duration * 24 * 60 * 60 * 1000) 
-        });
+    } else { // 如果用户当前是VIP，则在原有过期时间基础上延长
+      const baseTime = Math.max(now, invitee.vipExpireAt?.getTime() ?? 0);
+      const newExpireAt = new Date(baseTime + redeem.duration * 24 * 60 * 60 * 1000);
+
+      await this.updateUserByOpenid(openId, {
+        vipExpireAt: newExpireAt
+      });
     }
     
     // 更新邀请码使用记录

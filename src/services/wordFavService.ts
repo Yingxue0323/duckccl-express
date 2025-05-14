@@ -32,30 +32,48 @@ class WordFavService {
   * @param {string} wordId - 单词ID
   * @returns {Promise<{isWordFavorite: boolean}>} 返回新增后的收藏状态
   */
-  async favoriteWord(openId: string, wordId: string): Promise<{isWordFavorite: boolean}> {
-    // 检查是否已存在收藏
-    const existingFavorite = await WordFavorite.findOne({openId: openId, wordId: wordId});
-    // 如果不存在，则新增收藏，更新用户收藏数+1
-    if (!existingFavorite) {
-      await WordFavorite.create({ openId: openId, wordId: wordId });
-      await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.word": 1 } });
+  async favoriteWord(openId: string, wordId: string): Promise<{ isWordFavorite: boolean }> {
+    try {
+      // 尝试直接创建，避免手动查重
+      await WordFavorite.create({ openId, wordId });
+
+      // 只有创建成功时才 +1
+      await User.updateOne(
+        { openId },
+        { $inc: { 'favoriteCount.word': 1 } }
+      );
+    } catch (err: any) {
+      // 如果是唯一索引冲突（重复收藏）
+      if (err.code === 11000) {
+        // 已经收藏了，忽略
+      } else {
+        throw err; // 其他错误抛出
+      }
     }
 
     return { isWordFavorite: true };
   }
 
-  /**
+/**
    * 删除收藏单词
    * @param {string} openId - 用户ID
    * @param {string} wordId - 单词ID
    * @returns {Promise<{isFavorite: boolean}>} 返回删除后的收藏状态
    */
-  async unfavoriteWord(openId: string, wordId: string): Promise<{isWordFavorite: boolean}> {
-    // 如果存在，则删除收藏
-    await WordFavorite.findOneAndDelete({ openId: openId, wordId: wordId });
-    await User.findOneAndUpdate({ openId: openId }, { $inc: { "favoriteCount.word": -1 } });
-    return { isWordFavorite: false };
-  }
+      async unfavoriteWord(openId: string, wordId: string): Promise<{ isWordFavorite: boolean }> {
+        // 删除收藏记录
+        const result = await WordFavorite.findOneAndDelete({ openId, wordId });
+
+        // 只有删除成功时才 -1
+        if (result) {
+          await User.updateOne(
+            { openId },
+            { $inc: { 'favoriteCount.word': -1 } }
+          );
+        }
+
+        return { isWordFavorite: false };
+      }
 }
 
 export const wordFavService = new WordFavService(); 

@@ -54,8 +54,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   // 将用户信息附加到请求对象
   try {
     req.user = user;
-    const isUserVIP = await userService.checkVIPStatus(user.openId);
-    req.isUserVIP = isUserVIP;
+    // 直接使用已获取的 user 对象判断 VIP 状态
+    const now = new Date().getTime();
+    req.isUserVIP = !!(user.vipExpireAt && user.vipExpireAt.getTime() > now);
     logger.info(`${req.method} ${req.url} - authMW: 认证成功`);
     next();
   } catch (error: any) {
@@ -99,8 +100,8 @@ export const optionalAuthMiddleware = async (req: OptionalAuthRequest, res: Resp
 
     // 将用户信息附加到请求对象
     req.user = user;
-    const isUserVIP = await userService.checkVIPStatus(user.openId);
-    req.isUserVIP = isUserVIP;
+    const now = new Date().getTime();
+    req.isUserVIP = !!(user.vipExpireAt && user.vipExpireAt.getTime() > now);
     logger.info(`${req.method} ${req.url} - optionalAuthMW: token有效，用户已认证`);
     next();
   } catch (error: any) {
