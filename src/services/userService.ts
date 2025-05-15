@@ -179,9 +179,13 @@ class UserService {
       }
     );
 
+    // 获取更新后的用户信息
+    const updatedUser = await User.findOne({ openId });
+    if (!updatedUser) throw new Error('Failed to get updated user info');
+
     return {
       success: true,
-      vipExpireAt: invitee.vipExpireAt
+      vipExpireAt: updatedUser.vipExpireAt
     };
   }
 
